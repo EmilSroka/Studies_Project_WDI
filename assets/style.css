@@ -1,6 +1,13 @@
+/* Colors
+ **********
+    main: #36bbf5 - blue
+          #ac3939 - red
+          #ffcc00 - "gold"
+*/
+
 html{
     box-sizing: inherit;
-    
+
     font-size: .625rem;
 }
 
