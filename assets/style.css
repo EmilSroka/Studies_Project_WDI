@@ -5,6 +5,11 @@
           #ffcc00 - "gold"
 */
 
+@font-face {
+    font-family: "Lato";
+    src: url(assets/fonts/Lato-Regular.ttf) format("truetype");
+}
+
 html{
     box-sizing: inherit;
 
