@@ -22,3 +22,49 @@ body{
 
     background-color: #333;
 }
+
+/* components */
+
+.c-button{
+    padding: 1rem 2rem;
+    border-radius: .6rem;
+    border: .2rem solid #36bbf5;
+
+    background-color: transparent;
+
+    font-family: 'Lato', sans-serif;
+    font-size: 2rem;
+    color: #36bbf5;
+
+    transition: all .5s ease;
+}
+
+.c-button:hover,
+.c-button:focus{
+    border: .2rem solid #25aae4;
+    background-color: #36bbf5;
+    outline: none;
+    color: #333;
+}
+
+.c-button--danger{
+    border: .2rem solid #ac3939;
+    color: #ac3939;
+}
+
+.c-button--danger:hover,
+.c-button--danger:focus{
+    border: .2rem solid #bd4a4a;
+    background-color: #ac3939;
+}
+
+.c-button--primary{
+    border: .2rem solid #ffcc00;
+    color: #ffcc00;
+}
+
+.c-button--primary:hover,
+.c-button--primary:focus{
+    border: .2rem solid #eebb00;
+    background-color: #ffcc00;
+}
