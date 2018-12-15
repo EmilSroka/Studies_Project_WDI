@@ -13,6 +13,10 @@ function lerp(v0, v1, t) {
     return v0 + t * (v1 - v0);
 }
 
+function getRandomInt(from, to) {
+    return Math.floor(Math.random() * (to - from + 1)) + from;
+}
+
 const mouse = {
     x: innerWidth / 2,
     y: innerHeight / 2
