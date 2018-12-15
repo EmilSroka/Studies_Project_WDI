@@ -67,11 +67,45 @@ function Star(x, y, radius, isStatic) {
 
 }
 
-var newStar = new Star(100, 100, 2, true);
+function Background() {
+    this.numberOfStars = Math.ceil(innerWidth * innerHeight / 7500);
+    this.arrayOfStars = [];
+
+    this.generate = function () {
+        this.arrayOfStars = [];
+        for(let i=0; i<this.numberOfStars; i++){
+            let x = getRandomInt(0, innerWidth);
+            let y = getRandomInt(0, innerHeight);
+            let radius = getRandomInt(1, 3);
+            let noCollision = true;
+            for(let j=0; j<i; j++){
+                //detect collision
+                if(distance(x, y, this.arrayOfStars[j].x, this.arrayOfStars[j].y) < radius + this.arrayOfStars[j].radius){ 
+                    noCollision = false;
+                }
+            }
+            if(noCollision){
+                this.arrayOfStars.push(new Star(x, y, radius, true));
+            } else {
+                // re random
+                i--;
+                continue;
+            }
+        }
+    }
+
+    this.draw = function () {
+        for(let i=0; i<this.numberOfStars; i++){
+            this.arrayOfStars[i].update();
+        }
+    }
+}
 
 // Implementation
-function init() {
+var background = new Background();
 
+function init() {
+    background.generate();
 }
 
 // Animation Loop
@@ -79,7 +113,7 @@ function animate() {
     requestAnimationFrame(animate)
     c.clearRect(0, 0, canvas.width, canvas.height)
 
-    newStar.update();
+    background.draw();
 }
 
 init()
