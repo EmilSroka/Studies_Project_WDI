@@ -30,17 +30,17 @@ addEventListener('mousemove', event => {
 
 // Objects
 function Star(x, y, radius, isStatic) {
-    // position and movment
+    // Position and movment
     this.x = x;
     this.y = y;
     this.radius = radius;
-    // look 
+    // Look 
     this.fillColor = "#ffffff";
     this.strokeColor = "#777777";
     this.isStatic = isStatic; // !!!!
-    // opacity
+    // Opacity
     this.minOpacity = (Math.random() / 5) + 0.1;
-    this.maxOpacity = (Math.random() / 5) + 0.7;
+    this.maxOpacity = (Math.random() / 10) + 0.8;
     this.currentOpacity = this.minOpacity;
 
     this.update = function(){
