@@ -4,6 +4,7 @@ const c = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+
 // Util functions
 function distance(x1, y1, x2, y2){
     return Math.floor(Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
@@ -41,8 +42,51 @@ function GameController() {
         this.interface.classList.remove("hide");
         this.state = State.menu;
     }
+}
 
+function Player(x, y, img) {
+    this.width = 120;// unit
+    this.height = 80;// unit
+    this.x = x-this.width/2;
+    this.y = y-this.height-10;
+    this.dx = 0;
+    this.dxLimit = 20;
+    this.img = new Image(); this.img.src = img;
+    this.inertness = false;
+    this.inertnessTimer = 0;
 
+    this.update = function () {
+        if(!this.inertness) {
+            if(keys[65] || keys[37]){
+                this.dx = lerp(this.dx, -this.dxLimit, 0.6);
+            } else if(keys[68] || keys[39]) {
+                this.dx = lerp(this.dx, this.dxLimit, 0.6);
+            } else {
+                this.dx = lerp(this.dx, 0, 0.07);
+            }
+        } else if(this.inertnessTimer < 500) {
+            this.inertnessTimer += gameTime.deltaTime;
+            this.dx = lerp(this.dx, 0, 0.07);
+        } else {
+            this.inertness = false;
+            this.inertnessTimer = 0;
+        }
+        
+
+        if(this.x < 0){
+            this.dx = 2 * Math.abs(this.dx); 
+            this.inertness = true;
+        } else if (this.x + this.width> 1600) {
+            this.dx = -2 * Math.abs(this.dx);
+            this.inertness = true;
+        }
+
+        this.x += this.dx;
+        this.draw();
+    };
+
+    this.draw = drawFunction;
+    
 }
 
 function Star(x, y, radius, isStatic) {
@@ -120,6 +164,7 @@ function Background() {
 // Implementation
 const background = new Background();
 const gameController = new GameController();
+const player = new Player(800,900,"./assets/img/playerShip.png");
 function init() {
     background.generate();
 }
