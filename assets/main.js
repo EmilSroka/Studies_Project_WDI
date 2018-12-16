@@ -48,10 +48,19 @@ function GameController() {
     this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // get game unit
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
     this.startButton = document.getElementById("start-button");
+    this.exitButton = document.getElementById("exit-button");
 
     this.startGame = function () {
         this.interface.classList.add("hide");
         this.state = State.game;
+    }
+
+    this.endGame = function () {
+        let result = confirm("Przeglądarka może blokować możliwość zamknięcia strony przez skrypt. Czy chcesz spróbować zamknąć kartę ?"); 
+        if (result) {
+            window.close();
+        }
+        
     }
 
     this.startMenu = function () {
@@ -193,6 +202,10 @@ addEventListener('mousemove', function(event) {
 
 gameController.startButton.addEventListener("click", function() {
     gameController.startGame();
+});
+
+gameController.exitButton.addEventListener("click", function() {
+    gameController.endGame();
 });
 // Update key object
 window.onkeyup = function(e) { keys[e.keyCode] = false; };
