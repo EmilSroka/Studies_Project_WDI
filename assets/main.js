@@ -23,6 +23,13 @@ const mouse = {
     y: innerHeight / 2
 }
 
+const gameTime = {
+    deltaTime: 0,
+    time: 0
+}
+
+const keys = {}
+
 const State = {game: 1, menu: 2}
 
 // Objects
@@ -179,9 +186,13 @@ gameController.startButton.addEventListener("click", function() {
     gameController.startGame();
 });
 // Animation Loop
-function animate() {
+function animate(time) {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
+
+    //calc Time
+    gameTime.deltaTime = time - gameTime.time;
+    gameTime.time = time;
 
     background.draw();
 }
