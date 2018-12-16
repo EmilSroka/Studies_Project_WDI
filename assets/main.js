@@ -18,6 +18,10 @@ function getRandomInt(from, to) {
     return Math.floor(Math.random() * (to - from + 1)) + from;
 }
 
+function getRandomBool() {
+    return (Math.random() > 0.5) ? true : false;
+}
+
 const mouse = {
     x: innerWidth / 2,
     y: innerHeight / 2
@@ -217,6 +221,7 @@ function animate(time) {
     c.clearRect(0, 0, canvas.width, canvas.height);
 
     //calc Time
+    time = (typeof(time) === "undefined") ? 0 : time; // !!!
     gameTime.deltaTime = time - gameTime.time;
     gameTime.time = time;
 
