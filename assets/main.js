@@ -1,8 +1,9 @@
-const canvas = document.querySelector('.o-canvas');
-const c = canvas.getContext('2d');
+const canvas = document.querySelector(".o-canvas");
+const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
+
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -22,18 +23,31 @@ const mouse = {
     y: innerHeight / 2
 }
 
+const gameTime = {
+    deltaTime: 0,
+    time: 0
+}
+
+const keys = {}
+
 const State = {game: 1, menu: 2}
 
-// Event Listeners
-addEventListener('mousemove', function(event) {
-    mouse.x = event.clientX
-    mouse.y = event.clientY
-})
+// Borrowing function
+let drawFunction = function() {
+    let x = gameController.startPoint + this.x * gameController.unit;
+    let y = this.y * gameController.unit;
+    let width = this.width * gameController.unit;
+    let height = this.height * gameController.unit;
+    c.drawImage(this.img, x, y, width, height);
+};
 
 // Objects
 function GameController() {
     this.state = State.menu;
     this.interface = document.querySelector(".o-interface");
+    this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // get game unit
+    this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
+    this.startButton = document.getElementById("start-button");
 
     this.startGame = function () {
         this.interface.classList.add("hide");
@@ -44,6 +58,51 @@ function GameController() {
         this.interface.classList.remove("hide");
         this.state = State.menu;
     }
+}
+
+function Player(x, y, img) {
+    this.width = 120;// unit
+    this.height = 80;// unit
+    this.x = x-this.width/2;
+    this.y = y-this.height-10;
+    this.dx = 0;
+    this.dxLimit = 20;
+    this.img = new Image(); this.img.src = img;
+    this.inertness = false;
+    this.inertnessTimer = 0;
+
+    this.update = function () {
+        if(!this.inertness) {
+            if(keys[65] || keys[37]){
+                this.dx = lerp(this.dx, -this.dxLimit, 0.6);
+            } else if(keys[68] || keys[39]) {
+                this.dx = lerp(this.dx, this.dxLimit, 0.6);
+            } else {
+                this.dx = lerp(this.dx, 0, 0.07);
+            }
+        } else if(this.inertnessTimer < 300) {
+            this.inertnessTimer += gameTime.deltaTime;
+            this.dx = lerp(this.dx, 0, 0.07);
+        } else {
+            this.inertness = false;
+            this.inertnessTimer = 0;
+        }
+        
+
+        if(this.x < 0){
+            this.dx = 2 * Math.abs(this.dx); 
+            this.inertness = true;
+        } else if (this.x + this.width> 1600) {
+            this.dx = -2 * Math.abs(this.dx);
+            this.inertness = true;
+        }
+
+        this.x += this.dx;
+        this.draw();
+    };
+
+    this.draw = drawFunction;
+    
 }
 
 function Star(x, y, radius, isStatic) {
@@ -121,16 +180,39 @@ function Background() {
 // Implementation
 const background = new Background();
 const gameController = new GameController();
+const player = new Player(800,900,"./assets/img/playerShip.png");
 function init() {
     background.generate();
 }
 
+// Event Listeners
+addEventListener('mousemove', function(event) {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+});
+
+gameController.startButton.addEventListener("click", function() {
+    gameController.startGame();
+});
+// Update key object
+window.onkeyup = function(e) { keys[e.keyCode] = false; };
+window.onkeydown = function(e) { keys[e.keyCode] = true; };
+
 // Animation Loop
-function animate() {
+function animate(time) {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
 
+    //calc Time
+    gameTime.deltaTime = time - gameTime.time;
+    gameTime.time = time;
+
     background.draw();
+    //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    if(gameController.state === State.game){
+        player.update();
+    }
+    
 }
 
 init();
