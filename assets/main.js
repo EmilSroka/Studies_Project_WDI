@@ -80,7 +80,7 @@ function Player(x, y, img) {
             } else {
                 this.dx = lerp(this.dx, 0, 0.07);
             }
-        } else if(this.inertnessTimer < 500) {
+        } else if(this.inertnessTimer < 300) {
             this.inertnessTimer += gameTime.deltaTime;
             this.dx = lerp(this.dx, 0, 0.07);
         } else {
