@@ -32,6 +32,15 @@ const keys = {}
 
 const State = {game: 1, menu: 2}
 
+// Borrowing function
+let drawFunction = function() {
+    let x = gameController.startPoint + this.x * gameController.unit;
+    let y = this.y * gameController.unit;
+    let width = this.width * gameController.unit;
+    let height = this.height * gameController.unit;
+    c.drawImage(this.img, x, y, width, height);
+};
+
 // Objects
 function GameController() {
     this.state = State.menu;
@@ -180,11 +189,15 @@ function init() {
 addEventListener('mousemove', function(event) {
     mouse.x = event.clientX;
     mouse.y = event.clientY;
-})
+});
 
 gameController.startButton.addEventListener("click", function() {
     gameController.startGame();
 });
+// Update key object
+window.onkeyup = function(e) { keys[e.keyCode] = false; };
+window.onkeydown = function(e) { keys[e.keyCode] = true; };
+
 // Animation Loop
 function animate(time) {
     requestAnimationFrame(animate);
@@ -195,6 +208,11 @@ function animate(time) {
     gameTime.time = time;
 
     background.draw();
+    //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    if(gameController.state === State.game){
+        player.update();
+    }
+    
 }
 
 init();
