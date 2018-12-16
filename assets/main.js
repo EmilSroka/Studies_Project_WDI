@@ -126,7 +126,8 @@ function Star(x, y, radius, isStatic) {
     // Look 
     this.fillColor = "#ffffff";
     this.strokeColor = "#777777";
-    this.isStatic = isStatic; // !!!!
+    this.isStatic = isStatic;
+    this.timer = 0;
     // Opacity
     this.minOpacity = (Math.random() / 5) + 0.1;
     this.maxOpacity = (Math.random() / 10) + 0.8;
@@ -139,6 +140,23 @@ function Star(x, y, radius, isStatic) {
         } else if (this.currentOpacity > this.minOpacity) {
             this.currentOpacity -= 0.02;
         }
+        // calc move
+        if(gameController.state === State.game){
+            if(!this.isStatic){
+                if(this.timer > 10) {
+                    if(this.y > innerHeight + this.radius){
+                        console.log("test", this.y, innerHeight);
+                        this.y = -5;
+                    }
+                    this.timer = 0;
+                    this.y += 2;
+                    
+                } else {
+                    this.timer += gameTime.deltaTime;
+                }
+            }
+        }
+
         this.draw();
     };
 
@@ -174,7 +192,7 @@ function Background() {
                 }
             }
             if(noCollision){
-                this.arrayOfStars.push(new Star(x, y, radius, true));
+                this.arrayOfStars.push(new Star(x, y, radius, getRandomBool()));
             } else {
                 // re random
                 i--;
