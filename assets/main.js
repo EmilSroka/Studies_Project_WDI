@@ -1,8 +1,8 @@
-const canvas = document.querySelector('.o-canvas')
-const c = canvas.getContext('2d')
+const canvas = document.querySelector('.o-canvas');
+const c = canvas.getContext('2d');
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -23,7 +23,7 @@ const mouse = {
 }
 
 // Event Listeners
-addEventListener('mousemove', event => {
+addEventListener('mousemove', function(event) {
     mouse.x = event.clientX
     mouse.y = event.clientY
 })
@@ -68,7 +68,7 @@ function Star(x, y, radius, isStatic) {
 }
 
 function Background() {
-    this.numberOfStars = Math.ceil(innerWidth * innerHeight / 7500);
+    this.numberOfStars = Math.ceil(innerWidth * innerHeight / 4000);
     this.arrayOfStars = [];
 
     this.generate = function () {
@@ -77,7 +77,7 @@ function Background() {
             let x = getRandomInt(0, innerWidth);
             let y = getRandomInt(0, innerHeight);
             let radius = getRandomInt(1, 3);
-            let noCollision = true;
+            let noCollision = true; // flag
             for(let j=0; j<i; j++){
                 //detect collision
                 if(distance(x, y, this.arrayOfStars[j].x, this.arrayOfStars[j].y) < radius + this.arrayOfStars[j].radius){ 
@@ -102,7 +102,7 @@ function Background() {
 }
 
 // Implementation
-var background = new Background();
+let background = new Background();
 
 function init() {
     background.generate();
@@ -110,11 +110,11 @@ function init() {
 
 // Animation Loop
 function animate() {
-    requestAnimationFrame(animate)
-    c.clearRect(0, 0, canvas.width, canvas.height)
+    requestAnimationFrame(animate);
+    c.clearRect(0, 0, canvas.width, canvas.height);
 
     background.draw();
 }
 
-init()
-animate()
+init();
+animate();
