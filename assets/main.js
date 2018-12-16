@@ -22,6 +22,8 @@ const mouse = {
     y: innerHeight / 2
 }
 
+const State = {game: 1, menu: 2}
+
 // Event Listeners
 addEventListener('mousemove', function(event) {
     mouse.x = event.clientX
@@ -29,6 +31,21 @@ addEventListener('mousemove', function(event) {
 })
 
 // Objects
+function GameController() {
+    this.state = State.menu;
+    this.interface = document.querySelector(".o-interface");
+
+    this.startGame = function () {
+        this.interface.classList.add("hide");
+        this.state = State.game;
+    }
+
+    this.startMenu = function () {
+        this.interface.classList.remove("hide");
+        this.state = State.menu;
+    }
+}
+
 function Star(x, y, radius, isStatic) {
     // Position and movment
     this.x = x;
@@ -51,7 +68,7 @@ function Star(x, y, radius, isStatic) {
             this.currentOpacity -= 0.02;
         }
         this.draw();
-    }
+    };
 
     this.draw = function() {
         c.beginPath();
@@ -102,8 +119,8 @@ function Background() {
 }
 
 // Implementation
-let background = new Background();
-
+const background = new Background();
+const gameController = new GameController();
 function init() {
     background.generate();
 }

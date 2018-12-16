@@ -95,3 +95,11 @@ body{
     text-transform: uppercase;
     color: #36bbf5;
 }
+
+/************
+ * util class
+ ************/
+
+.hide{
+    display: none;
+}
