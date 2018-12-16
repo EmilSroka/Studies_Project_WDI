@@ -1,5 +1,5 @@
-const canvas = document.querySelector('.o-canvas');
-const c = canvas.getContext('2d');
+const canvas = document.querySelector(".o-canvas");
+const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -24,16 +24,13 @@ const mouse = {
 
 const State = {game: 1, menu: 2}
 
-// Event Listeners
-addEventListener('mousemove', function(event) {
-    mouse.x = event.clientX
-    mouse.y = event.clientY
-})
-
 // Objects
 function GameController() {
     this.state = State.menu;
     this.interface = document.querySelector(".o-interface");
+    this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // get game unit
+    this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
+    this.startButton = document.getElementById("start-button");
 
     this.startGame = function () {
         this.interface.classList.add("hide");
@@ -44,6 +41,8 @@ function GameController() {
         this.interface.classList.remove("hide");
         this.state = State.menu;
     }
+
+
 }
 
 function Star(x, y, radius, isStatic) {
@@ -125,6 +124,15 @@ function init() {
     background.generate();
 }
 
+// Event Listeners
+addEventListener('mousemove', function(event) {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+})
+
+gameController.startButton.addEventListener("click", function() {
+    gameController.startGame();
+});
 // Animation Loop
 function animate() {
     requestAnimationFrame(animate);
