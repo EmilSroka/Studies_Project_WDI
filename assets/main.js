@@ -165,7 +165,6 @@ function Star(x, y, radius, isStatic) {
             if(!this.isStatic){
                 if(this.timer > 10) {
                     if(this.y > innerHeight + this.radius){
-                        console.log("test", this.y, innerHeight);
                         this.y = -5;
                     }
                     this.timer = 0;
