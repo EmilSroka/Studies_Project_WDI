@@ -53,10 +53,14 @@ function GameController() {
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
     this.startButton = document.getElementById("start-button");
     this.exitButton = document.getElementById("exit-button");
+    this.hpBar = document.querySelector(".c-bar");
+    this.hpBarProgress = this.hpBar.querySelector("span");
 
     this.startGame = function () {
         this.interface.classList.add("hide");
+        this.hpBar.classList.remove("hide");
         this.state = State.game;
+        
     }
 
     this.endGame = function () {
@@ -69,6 +73,7 @@ function GameController() {
 
     this.startMenu = function () {
         this.interface.classList.remove("hide");
+        this.hpBar.classList.add("hide");
         this.state = State.menu;
     }
 }
