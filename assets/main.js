@@ -34,9 +34,10 @@ const gameTime = {
 
 const keys = {}
 
+// enumerators
 const State = {game: 1, menu: 2}
 
-// Borrowing function
+// Borrowing functions
 let drawFunction = function() {
     let x = gameController.startPoint + this.x * gameController.unit;
     let y = this.y * gameController.unit;
@@ -48,9 +49,10 @@ let drawFunction = function() {
 // Objects
 function GameController() {
     this.state = State.menu;
-    this.interface = document.querySelector(".o-interface");
-    this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // get game unit
+    this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // calc game unit
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
+    // html elements
+    this.interface = document.querySelector(".o-interface");
     this.startButton = document.getElementById("start-button");
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
@@ -60,7 +62,6 @@ function GameController() {
         this.interface.classList.add("hide");
         this.hpBar.classList.remove("hide");
         this.state = State.game;
-        
     }
 
     this.endGame = function () {
@@ -105,6 +106,7 @@ function Player(x, y, img) {
     this.inertnessTimer = 0;
 
     this.update = function () {
+        // calc velocity
         if(!this.inertness) {
             if(keys[65] || keys[37]){
                 this.dx = lerp(this.dx, -this.dxLimit, 0.6);
@@ -120,8 +122,7 @@ function Player(x, y, img) {
             this.inertness = false;
             this.inertnessTimer = 0;
         }
-        
-
+        // player get inertness when hit map border
         if(this.x < 0){
             this.dx = 2 * Math.abs(this.dx); 
             this.inertness = true;
@@ -129,7 +130,7 @@ function Player(x, y, img) {
             this.dx = -2 * Math.abs(this.dx);
             this.inertness = true;
         }
-
+        // move and draw
         this.x += this.dx;
         this.draw();
     };
@@ -198,12 +199,14 @@ function Background() {
     this.arrayOfStars = [];
 
     this.generate = function () {
+        // generate array of stars
         this.arrayOfStars = [];
         for(let i=0; i<this.numberOfStars; i++){
             let x = getRandomInt(0, innerWidth);
             let y = getRandomInt(0, innerHeight);
             let radius = getRandomInt(1, 3);
-            let noCollision = true; // flag
+            // checking for collisions
+            let noCollision = true;
             for(let j=0; j<i; j++){
                 //detect collision
                 if(distance(x, y, this.arrayOfStars[j].x, this.arrayOfStars[j].y) < radius + this.arrayOfStars[j].radius){ 
@@ -221,6 +224,7 @@ function Background() {
     }
 
     this.draw = function () {
+        // draw all stars
         for(let i=0; i<this.numberOfStars; i++){
             this.arrayOfStars[i].update();
         }
@@ -257,8 +261,7 @@ function animate(time) {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
 
-    //calc Time
-    time = (typeof(time) === "undefined") ? 0 : time; // !!!
+    // calc Time
     gameTime.deltaTime = time - gameTime.time;
     gameTime.time = time;
 
@@ -271,4 +274,4 @@ function animate(time) {
 }
 
 init();
-animate();
+animate(0);
