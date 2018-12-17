@@ -3,7 +3,7 @@ const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
-
+c.save();
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -38,12 +38,16 @@ const keys = {}
 const State = {game: 1, menu: 2}
 
 // Borrowing functions
-let drawFunction = function() {
+let drawFunction = function(opacity) {
+    if(typeof(opacity) !== "undefined") {
+        c.globalAlpha = opacity;
+    }
     let x = gameController.startPoint + this.x * gameController.unit;
     let y = this.y * gameController.unit;
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
     c.drawImage(this.img, x, y, width, height);
+    c.restore(); // !!!
 };
 
 // Objects
@@ -183,7 +187,6 @@ function Star(x, y, radius, isStatic) {
     this.draw = function() {
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        c.save();
         c.globalAlpha = this.currentOpacity;
         c.fillStyle = this.fillColor;
         c.fill();
