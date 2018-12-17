@@ -3,7 +3,7 @@ const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
-
+c.save();
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -38,12 +38,16 @@ const keys = {}
 const State = {game: 1, menu: 2}
 
 // Borrowing functions
-let drawFunction = function() {
+let drawFunction = function(opacity) {
+    if(typeof(opacity) !== "undefined") {
+        c.globalAlpha = opacity;
+    }
     let x = gameController.startPoint + this.x * gameController.unit;
     let y = this.y * gameController.unit;
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
     c.drawImage(this.img, x, y, width, height);
+    c.restore(); // !!!
 };
 
 // Objects
@@ -95,15 +99,21 @@ function GameController() {
 }
 
 function Player(x, y, img) {
-    this.width = 120;// unit
-    this.height = 80;// unit
+    // movement and position (game unit)
+    this.width = 120;
+    this.height = 80;
     this.x = x-this.width/2;
     this.y = y-this.height-10;
     this.dx = 0;
     this.dxLimit = 20;
-    this.img = new Image(); this.img.src = img;
     this.inertness = false;
     this.inertnessTimer = 0;
+    // game mechanic
+    this.hp = 100;
+    this.damageEffect = false;
+    this.damageEffectTimer = 0;
+    this.img = new Image(); this.img.src = img;
+    
 
     this.update = function () {
         // calc velocity
@@ -130,10 +140,30 @@ function Player(x, y, img) {
             this.dx = -2 * Math.abs(this.dx);
             this.inertness = true;
         }
+        // !!!
+        let opacity = 1;
+        if(this.damageEffect){
+            if(this.damageEffectTimer < 500){
+                this.damageEffectTimer += gameTime.deltaTime;
+                opacity = (1/100000)*this.damageEffectTimer*(this.damageEffectTimer - 500) + 1; // Quadratic function, value from 1 to ~0.4
+            } else {
+                this.damageEffect = false;
+                this.damageEffectTimer = 0;
+            }
+        }
+
         // move and draw
         this.x += this.dx;
-        this.draw();
+        this.draw(opacity);
     };
+
+    this.getDamage = function (dmg) {
+        // update hp and hpBar
+        this.hp -= dmg;
+        gameController.updateHpBar(this.hp);
+        // start damage effect
+        this.damageEffect = true;
+    }
 
     this.draw = drawFunction;
     
@@ -183,7 +213,6 @@ function Star(x, y, radius, isStatic) {
     this.draw = function() {
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        c.save();
         c.globalAlpha = this.currentOpacity;
         c.fillStyle = this.fillColor;
         c.fill();
