@@ -146,6 +146,7 @@ function Player(x, y, img) {
             if(this.damageEffectTimer < 500){
                 this.damageEffectTimer += gameTime.deltaTime;
                 opacity = (1/100000)*this.damageEffectTimer*(this.damageEffectTimer - 500) + 1; // Quadratic function, value from 1 to ~0.4
+                opacity = Math.min(1, opacity); // prevent opacity greater than 1 
             } else {
                 this.damageEffect = false;
                 this.damageEffectTimer = 0;
