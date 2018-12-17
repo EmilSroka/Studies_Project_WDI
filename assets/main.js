@@ -76,6 +76,21 @@ function GameController() {
         this.hpBar.classList.add("hide");
         this.state = State.menu;
     }
+
+    this.updateHpBar = function (hp) {
+        // change hp bar style
+        if(hp < 10){
+            this.hpBar.classList.add("c-bar--danger");
+            this.hpBar.classList.remove("c-bar--warning");
+        } else if(hp < 30) {
+            this.hpBar.classList.add("c-bar--warning");
+            this.hpBar.classList.remove("c-bar--danger");
+        } else {
+            this.hpBar.classList.remove("c-bar--warning");
+            this.hpBar.classList.remove("c-bar--danger");
+        }
+        this.hpBarProgress.style.width=hp+"%";
+    }
 }
 
 function Player(x, y, img) {
