@@ -96,6 +96,41 @@ body{
     color: #36bbf5;
 }
 
+/* bar */
+.c-bar{
+    position: absolute;
+    top: 2vmin;
+    left: 2vmin;
+    height: 4rem;
+    width: 20rem;
+    border: .4rem solid #36bbf5;
+    border-radius: .6rem;
+    transition: all .5s ease;
+}
+
+.c-bar > span{
+    display: block;
+    height: 4rem;
+    background-color: #25aae4;
+    border-radius: .1rem;
+    transition: all .5s ease;
+}
+
+.c-bar--warning{
+    border: .4rem solid #eebb00;
+}
+
+.c-bar--warning > span{
+    background-color: #ffcc00;
+}
+
+.c-bar--danger{
+    border: .4rem solid #ac3939;
+}
+
+.c-bar--danger > span{
+    background-color: #bd4a4a;
+}
 /************
  * util class
  ************/

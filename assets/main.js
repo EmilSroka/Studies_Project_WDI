@@ -53,10 +53,14 @@ function GameController() {
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
     this.startButton = document.getElementById("start-button");
     this.exitButton = document.getElementById("exit-button");
+    this.hpBar = document.querySelector(".c-bar");
+    this.hpBarProgress = this.hpBar.querySelector("span");
 
     this.startGame = function () {
         this.interface.classList.add("hide");
+        this.hpBar.classList.remove("hide");
         this.state = State.game;
+        
     }
 
     this.endGame = function () {
@@ -69,7 +73,23 @@ function GameController() {
 
     this.startMenu = function () {
         this.interface.classList.remove("hide");
+        this.hpBar.classList.add("hide");
         this.state = State.menu;
+    }
+
+    this.updateHpBar = function (hp) {
+        // change hp bar style
+        if(hp < 10){
+            this.hpBar.classList.add("c-bar--danger");
+            this.hpBar.classList.remove("c-bar--warning");
+        } else if(hp < 30) {
+            this.hpBar.classList.add("c-bar--warning");
+            this.hpBar.classList.remove("c-bar--danger");
+        } else {
+            this.hpBar.classList.remove("c-bar--warning");
+            this.hpBar.classList.remove("c-bar--danger");
+        }
+        this.hpBarProgress.style.width=hp+"%";
     }
 }
 
@@ -145,7 +165,6 @@ function Star(x, y, radius, isStatic) {
             if(!this.isStatic){
                 if(this.timer > 10) {
                     if(this.y > innerHeight + this.radius){
-                        console.log("test", this.y, innerHeight);
                         this.y = -5;
                     }
                     this.timer = 0;
