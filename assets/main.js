@@ -43,6 +43,7 @@ const MeteorType = {brown: 1, grey: 2}
 
 // Borrowing functions
 let drawFunction = function(opacity) {
+    c.save();
     if(typeof(opacity) !== "undefined") {
         c.globalAlpha = opacity;
     }
@@ -51,7 +52,7 @@ let drawFunction = function(opacity) {
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
     c.drawImage(this.img, x, y, width, height);
-    c.restore(); // !!!
+    c.restore();
 };
 
 // Objects
@@ -65,6 +66,7 @@ function GameController() {
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
     this.hpBarProgress = this.hpBar.querySelector("span");
+    // game objects 
 
     this.startGame = function () {
         this.interface.classList.add("hide");
@@ -106,6 +108,7 @@ function Player(x, y, img) {
     // movement and position (game unit)
     this.width = 120;
     this.height = 80;
+    this.radius = 40;
     this.x = x-this.width/2;
     this.y = y-this.height-10;
     this.dx = 0;
@@ -171,24 +174,76 @@ function Player(x, y, img) {
     }
 
     this.draw = drawFunction;
-    
 }
 
-function Meteor(x, y, dx, dy, type) {
+function EnemyController() {
+    const arrayOfMeteors = [];
+
+    this.update = function() {
+        // meteors
+        for(let i=0;i<arrayOfMeteors.length;i++){
+            arrayOfMeteors[i].update(); 
+            // delete when meteor get out of screen
+            if(arrayOfMeteors[i].y > 1000){
+                arrayOfMeteors.splice(i, 1);
+            }
+        }
+        // spawn new metheors 
+        if(Math.random() < 0.001){
+            let x, dx;
+            let y = -50;
+            let dy = getRandomBool() ? 1 : 2;
+            let step = getRandomInt(1,3);
+            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown)
+            if(getRandomBool()){
+                x = 50;
+                dx = getRandomBool() ? 1 : 0.5;
+            } else {
+                //console.log("TEST");
+                x = 1550;
+                dx = getRandomBool() ? -1 : -0.5;
+            }
+            console.log("Spawn", x, y, dx, dy);
+            arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+        }
+    }
+
+    this.collision = function() {
+        for(let i=0;i<arrayOfMeteors.length;i++){
+            if(distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y) < player.radius + arrayOfMeteors[i].radius){
+                if(!arrayOfMeteors[i].hitPlayer){
+                    player.getDamage(arrayOfMeteors[i].dmg);
+                    arrayOfMeteors[i].hitPlayer = true;
+                    //console.log(player.x, player.y, player.x + player.width/2, player.y + player.height/2);
+                    //console.log(arrayOfMeteors[i].x, arrayOfMeteors[i].y, arrayOfMeteors[i].x + arrayOfMeteors[i].width/2, arrayOfMeteors[i].y + arrayOfMeteors[i].height/2);
+                }
+            }
+        }
+    }
+}
+
+function Meteor(x, y, dx, dy, step, type) {
+    // position and movment
     this.width = 100;
     this.height = 100;
+    this.radius = 30;
     this.x = x - this.width/2;
     this.y = y - this.height/2;
     this.dx = dx;
     this.dy = dy;
     this.rotationAngle = 0;
+    this.rotationStep = step;
+    // game mechanic
     this.dmg = type === MeteorType.grey ? 40 : 20;
     this.img = new Image(); this.img.src = (type === MeteorType.grey ? meteorGrayImgPath : meteorBrownImgPath);
+    this.hitPlayer = false;
+
     
     this.update = function() {
         this.x += this.dx;
         this.y += this.dy;
-        this.rotationAngle += (this.rotate === 359) ? -359 : 1;
+        this.rotationAngle += step;
+        this.rotationAngle %= 360;
         
         this.draw();
     }
@@ -302,6 +357,7 @@ function Background() {
 const background = new Background();
 const gameController = new GameController();
 const player = new Player(800,900,"./assets/img/playerShip.png");
+const enemyController = new EnemyController();
 function init() {
     background.generate();
 }
@@ -335,9 +391,14 @@ function animate(time) {
     background.draw();
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
+
+        
+        enemyController.update();
         player.update();
+
+        // colisions
+        enemyController.collision();
     }
-    
 }
 
 init();
