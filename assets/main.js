@@ -3,7 +3,10 @@ const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
-c.save();
+
+// Graphics
+let meteorBrownImgPath = "./assets/img/meteorBrown.png";
+let meteorGrayImgPath = "./assets/img/meteorGrey.png";
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -36,6 +39,7 @@ const keys = {}
 
 // enumerators
 const State = {game: 1, menu: 2}
+const MeteorType = {brown: 1, grey: 2}
 
 // Borrowing functions
 let drawFunction = function(opacity) {
@@ -170,6 +174,38 @@ function Player(x, y, img) {
     
 }
 
+function Meteor(x, y, dx, dy, type) {
+    this.width = 100;
+    this.height = 100;
+    this.x = x - this.width/2;
+    this.y = y - this.height/2;
+    this.dx = dx;
+    this.dy = dy;
+    this.rotationAngle = 0;
+    this.dmg = type === MeteorType.grey ? 40 : 20;
+    this.img = new Image(); this.img.src = (type === MeteorType.grey ? meteorGrayImgPath : meteorBrownImgPath);
+    
+    this.update = function() {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.rotationAngle += (this.rotate === 359) ? -359 : 1;
+        
+        this.draw();
+    }
+
+    this.draw = function() {
+        c.save();
+        let canvasX = gameController.startPoint + this.x*gameController.unit;
+        let canvasY = this.y*gameController.unit;
+        c.translate(canvasX,canvasY);
+        c.rotate(this.rotationAngle*Math.PI/180);
+        let width = this.width * gameController.unit;
+        let height = this.height * gameController.unit;
+        c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
+        c.restore();
+    }
+}
+
 function Star(x, y, radius, isStatic) {
     // Position and movment
     this.x = x;
@@ -212,6 +248,7 @@ function Star(x, y, radius, isStatic) {
     };
 
     this.draw = function() {
+        c.save();
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
         c.globalAlpha = this.currentOpacity;
