@@ -168,6 +168,7 @@ function Player(x, y, img) {
     this.getDamage = function (dmg) {
         // update hp and hpBar
         this.hp -= dmg;
+        this.hp = Math.max(0, this.hp);
         gameController.updateHpBar(this.hp);
         // start damage effect
         this.damageEffect = true;
@@ -184,7 +185,7 @@ function EnemyController() {
         for(let i=0;i<arrayOfMeteors.length;i++){
             arrayOfMeteors[i].update(); 
             // delete when meteor get out of screen
-            if(arrayOfMeteors[i].y > 1000){
+            if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
                 arrayOfMeteors.splice(i, 1);
             }
         }
