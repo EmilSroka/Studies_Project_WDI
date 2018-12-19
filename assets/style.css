@@ -131,6 +131,15 @@ body{
 .c-bar--danger > span{
     background-color: #bd4a4a;
 }
+
+.c-score{
+    position: absolute;
+    top: 2vmin;
+    right: 2vmin;
+    margin: 0;
+    font-size: 3rem;
+    color: #36bbf5;
+}
 /************
  * util class
  ************/

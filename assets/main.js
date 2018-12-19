@@ -66,11 +66,15 @@ function GameController() {
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
     this.hpBarProgress = this.hpBar.querySelector("span");
+    this.score = 0;
+    this.scoreP = document.querySelector(".c-score");
+    this.scoreTimer = 0;
     // game objects 
 
     this.startGame = function () {
         this.interface.classList.add("hide");
         this.hpBar.classList.remove("hide");
+        this.scoreP.classList.remove("hide");
         this.state = State.game;
     }
 
@@ -79,13 +83,22 @@ function GameController() {
         if (result) {
             window.close();
         }
-        
     }
 
     this.startMenu = function () {
         this.interface.classList.remove("hide");
         this.hpBar.classList.add("hide");
+        this.scoreP.classList.add("hide");
         this.state = State.menu;
+    }
+
+    this.update = function () {
+        this.scoreTimer += gameTime.deltaTime;
+        if(this.scoreTimer > 1000) {
+            this.score += 1;
+            this.scoreTimer = 0;
+            this.updateScoreP(this.score);
+        }
     }
 
     this.updateHpBar = function (hp) {
@@ -101,6 +114,15 @@ function GameController() {
             this.hpBar.classList.remove("c-bar--danger");
         }
         this.hpBarProgress.style.width=hp+"%";
+    }
+
+    this.updateScoreP = function (score) {
+        this.scoreP.innerText = "Wynik: " + score;
+    }
+
+    this.addScore = function (score) {
+        this.score += score;
+        this.updateScoreP(this.score);
     }
 }
 
@@ -186,6 +208,9 @@ function EnemyController() {
             arrayOfMeteors[i].update(); 
             // delete when meteor get out of screen
             if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
+                if(!arrayOfMeteors[i].hitPlayer){
+                    gameController.addScore(5);
+                }
                 arrayOfMeteors.splice(i, 1);
             }
         }
@@ -195,16 +220,14 @@ function EnemyController() {
             let y = -50;
             let dy = getRandomBool() ? 1 : 2;
             let step = getRandomInt(1,3);
-            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown)
+            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown);
             if(getRandomBool()){
                 x = 50;
                 dx = getRandomBool() ? 1 : 0.5;
             } else {
-                //console.log("TEST");
                 x = 1550;
                 dx = getRandomBool() ? -1 : -0.5;
             }
-            console.log("Spawn", x, y, dx, dy);
             arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
         }
     }
@@ -392,7 +415,7 @@ function animate(time) {
     background.draw();
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
-
+        gameController.update();
         
         enemyController.update();
         player.update();
