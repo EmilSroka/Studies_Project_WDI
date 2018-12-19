@@ -76,6 +76,7 @@ function GameController() {
         this.hpBar.classList.remove("hide");
         this.scoreP.classList.remove("hide");
         this.state = State.game;
+        //gameTime = 0;
     }
 
     this.endGame = function () {
@@ -407,14 +408,14 @@ window.onkeydown = function(e) { keys[e.keyCode] = true; };
 function animate(time) {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
-
-    // calc Time
-    gameTime.deltaTime = time - gameTime.time;
-    gameTime.time = time;
-
+    
     background.draw();
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
+        // calc time 
+        gameTime.deltaTime = time - gameTime.time;
+        gameTime.time = time;
+
         gameController.update();
         
         enemyController.update();
