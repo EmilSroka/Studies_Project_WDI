@@ -3,7 +3,10 @@ const c = canvas.getContext("2d");
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
-c.save();
+
+// Graphics
+let meteorBrownImgPath = "./assets/img/meteorBrown.png";
+let meteorGrayImgPath = "./assets/img/meteorGrey.png";
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -36,9 +39,11 @@ const keys = {}
 
 // enumerators
 const State = {game: 1, menu: 2}
+const MeteorType = {brown: 1, grey: 2}
 
 // Borrowing functions
 let drawFunction = function(opacity) {
+    c.save();
     if(typeof(opacity) !== "undefined") {
         c.globalAlpha = opacity;
     }
@@ -47,7 +52,7 @@ let drawFunction = function(opacity) {
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
     c.drawImage(this.img, x, y, width, height);
-    c.restore(); // !!!
+    c.restore();
 };
 
 // Objects
@@ -61,6 +66,7 @@ function GameController() {
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
     this.hpBarProgress = this.hpBar.querySelector("span");
+    // game objects 
 
     this.startGame = function () {
         this.interface.classList.add("hide");
@@ -102,6 +108,7 @@ function Player(x, y, img) {
     // movement and position (game unit)
     this.width = 120;
     this.height = 80;
+    this.radius = 40;
     this.x = x-this.width/2;
     this.y = y-this.height-10;
     this.dx = 0;
@@ -161,13 +168,98 @@ function Player(x, y, img) {
     this.getDamage = function (dmg) {
         // update hp and hpBar
         this.hp -= dmg;
+        this.hp = Math.max(0, this.hp);
         gameController.updateHpBar(this.hp);
         // start damage effect
         this.damageEffect = true;
     }
 
     this.draw = drawFunction;
+}
+
+function EnemyController() {
+    const arrayOfMeteors = [];
+
+    this.update = function() {
+        // meteors
+        for(let i=0;i<arrayOfMeteors.length;i++){
+            arrayOfMeteors[i].update(); 
+            // delete when meteor get out of screen
+            if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
+                arrayOfMeteors.splice(i, 1);
+            }
+        }
+        // spawn new metheors 
+        if(Math.random() < 0.001){
+            let x, dx;
+            let y = -50;
+            let dy = getRandomBool() ? 1 : 2;
+            let step = getRandomInt(1,3);
+            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown)
+            if(getRandomBool()){
+                x = 50;
+                dx = getRandomBool() ? 1 : 0.5;
+            } else {
+                //console.log("TEST");
+                x = 1550;
+                dx = getRandomBool() ? -1 : -0.5;
+            }
+            console.log("Spawn", x, y, dx, dy);
+            arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+        }
+    }
+
+    this.collision = function() {
+        for(let i=0;i<arrayOfMeteors.length;i++){
+            if(distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y) < player.radius + arrayOfMeteors[i].radius){
+                if(!arrayOfMeteors[i].hitPlayer){
+                    player.getDamage(arrayOfMeteors[i].dmg);
+                    arrayOfMeteors[i].hitPlayer = true;
+                    //console.log(player.x, player.y, player.x + player.width/2, player.y + player.height/2);
+                    //console.log(arrayOfMeteors[i].x, arrayOfMeteors[i].y, arrayOfMeteors[i].x + arrayOfMeteors[i].width/2, arrayOfMeteors[i].y + arrayOfMeteors[i].height/2);
+                }
+            }
+        }
+    }
+}
+
+function Meteor(x, y, dx, dy, step, type) {
+    // position and movment
+    this.width = 100;
+    this.height = 100;
+    this.radius = 30;
+    this.x = x - this.width/2;
+    this.y = y - this.height/2;
+    this.dx = dx;
+    this.dy = dy;
+    this.rotationAngle = 0;
+    this.rotationStep = step;
+    // game mechanic
+    this.dmg = type === MeteorType.grey ? 40 : 20;
+    this.img = new Image(); this.img.src = (type === MeteorType.grey ? meteorGrayImgPath : meteorBrownImgPath);
+    this.hitPlayer = false;
+
     
+    this.update = function() {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.rotationAngle += step;
+        this.rotationAngle %= 360;
+        
+        this.draw();
+    }
+
+    this.draw = function() {
+        c.save();
+        let canvasX = gameController.startPoint + this.x*gameController.unit;
+        let canvasY = this.y*gameController.unit;
+        c.translate(canvasX,canvasY);
+        c.rotate(this.rotationAngle*Math.PI/180);
+        let width = this.width * gameController.unit;
+        let height = this.height * gameController.unit;
+        c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
+        c.restore();
+    }
 }
 
 function Star(x, y, radius, isStatic) {
@@ -212,6 +304,7 @@ function Star(x, y, radius, isStatic) {
     };
 
     this.draw = function() {
+        c.save();
         c.beginPath();
         c.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
         c.globalAlpha = this.currentOpacity;
@@ -265,6 +358,7 @@ function Background() {
 const background = new Background();
 const gameController = new GameController();
 const player = new Player(800,900,"./assets/img/playerShip.png");
+const enemyController = new EnemyController();
 function init() {
     background.generate();
 }
@@ -298,9 +392,14 @@ function animate(time) {
     background.draw();
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
+
+        
+        enemyController.update();
         player.update();
+
+        // colisions
+        enemyController.collision();
     }
-    
 }
 
 init();
