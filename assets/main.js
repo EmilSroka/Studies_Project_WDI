@@ -66,11 +66,15 @@ function GameController() {
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
     this.hpBarProgress = this.hpBar.querySelector("span");
+    this.score = 0;
+    this.scoreP = document.querySelector(".c-score");
+    this.scoreTimer = 0;
     // game objects 
 
     this.startGame = function () {
         this.interface.classList.add("hide");
         this.hpBar.classList.remove("hide");
+        this.scoreP.classList.remove("hide");
         this.state = State.game;
     }
 
@@ -79,13 +83,22 @@ function GameController() {
         if (result) {
             window.close();
         }
-        
     }
 
     this.startMenu = function () {
         this.interface.classList.remove("hide");
         this.hpBar.classList.add("hide");
+        this.scoreP.classList.add("hide");
         this.state = State.menu;
+    }
+
+    this.update = function () {
+        this.scoreTimer += gameTime.deltaTime;
+        if(this.scoreTimer > 1000) {
+            this.score += 1;
+            this.scoreTimer = 0;
+            this.updateScoreP(this.score);
+        }
     }
 
     this.updateHpBar = function (hp) {
@@ -101,6 +114,15 @@ function GameController() {
             this.hpBar.classList.remove("c-bar--danger");
         }
         this.hpBarProgress.style.width=hp+"%";
+    }
+
+    this.updateScoreP = function (score) {
+        this.scoreP.innerText = "Wynik: " + score;
+    }
+
+    this.addScore = function (score) {
+        this.score += score;
+        this.updateScoreP(this.score);
     }
 }
 
@@ -392,7 +414,7 @@ function animate(time) {
     background.draw();
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
-
+        gameController.update();
         
         enemyController.update();
         player.update();
