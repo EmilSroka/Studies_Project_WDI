@@ -208,6 +208,9 @@ function EnemyController() {
             arrayOfMeteors[i].update(); 
             // delete when meteor get out of screen
             if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
+                if(!arrayOfMeteors[i].hitPlayer){
+                    gameController.addScore(5);
+                }
                 arrayOfMeteors.splice(i, 1);
             }
         }
@@ -217,16 +220,14 @@ function EnemyController() {
             let y = -50;
             let dy = getRandomBool() ? 1 : 2;
             let step = getRandomInt(1,3);
-            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown)
+            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown);
             if(getRandomBool()){
                 x = 50;
                 dx = getRandomBool() ? 1 : 0.5;
             } else {
-                //console.log("TEST");
                 x = 1550;
                 dx = getRandomBool() ? -1 : -0.5;
             }
-            console.log("Spawn", x, y, dx, dy);
             arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
         }
     }
