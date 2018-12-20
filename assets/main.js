@@ -230,6 +230,7 @@ function Player(x, y, img) {
 
 function EnemyController() {
     const arrayOfMeteors = [];
+    const arrayOfEnemies = [];
 
     this.update = function() {
         // meteors
@@ -245,25 +246,20 @@ function EnemyController() {
         }
         // spawn new metheors 
         if(Math.random() < 0.001){
-            let x, dx;
-            let y = -50;
-            let dy = getRandomBool() ? 1 : 2;
-            let step = getRandomInt(1,3);
-            let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown);
-            if(getRandomBool()){
-                x = 50;
-                dx = getRandomBool() ? 1 : 0.5;
-            } else {
-                x = 1550;
-                dx = getRandomBool() ? -1 : -0.5;
-            }
-            arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+            this.spawnRandomMeteor();
+        }
+
+        // enemies
+        for(let i=0;i<arrayOfEnemies.length;i++){
+            arrayOfEnemies[i].update();
         }
     }
 
     this.collision = function() {
+        // meteors and player
         for(let i=0;i<arrayOfMeteors.length;i++){
-            if(distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y) < player.radius + arrayOfMeteors[i].radius){
+            let distancePlayerMeteor = distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
+            if( distancePlayerMeteor < player.radius + arrayOfMeteors[i].radius){
                 if(!arrayOfMeteors[i].hitPlayer){
                     player.getDamage(arrayOfMeteors[i].dmg);
                     arrayOfMeteors[i].hitPlayer = true;
