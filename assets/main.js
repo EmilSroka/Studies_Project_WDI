@@ -11,19 +11,34 @@ let meteorBrownImgPath = "./assets/img/meteorBrown.png";
 let meteorGrayImgPath = "./assets/img/meteorGrey.png";
 const arrayOfEnemyImgPath = [];
 const arrayOfShotsImgPath = [];
+const arrayOfEnemyHP = [];
 arrayOfEnemyImgPath.push("./assets/img/enemy1.png");
-arrayOfShotsImgPath.push("./assets/img/laserBlue.png")
+arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
+arrayOfEnemyHP.push(60);
 
 // 
+/* 
 let calcVelocityX1 = function(timer) {
-    timer /= 1000;
+    timer /= 2000;
     return 12.2*Math.sin(timer);
 }
 
 let calcVelocityY1 = function(timer) {
-    timer /= 1000;
+    timer /= 2000;
     timer += Math.PI/2;
     return Math.sin(timer) * Math.sin(timer);
+}
+*/
+
+let calcVelocityX1 = function(timer) {
+    timer /= 2000;
+    return 6.1*Math.sin(timer);
+}
+
+let calcVelocityY1 = function(timer) {
+    timer /= 2000;
+    timer += Math.PI/2;
+    return (Math.sin(timer) * Math.sin(timer))/2;
 }
 
 // Util functions
@@ -175,6 +190,9 @@ function Player(x, y, img) {
     this.damageEffect = false;
     this.damageEffectTimer = 0;
     this.img = new Image(); this.img.src = img;
+    // shot
+    this.shotCooldown = 300;
+    this.shotCooldownTimer = 0;
     
 
     this.update = function () {
@@ -202,10 +220,20 @@ function Player(x, y, img) {
             this.dx = -2 * Math.abs(this.dx);
             this.inertness = true;
         }
-        // shot
-        if(keys[32] || keys[38] || keys[87]){
-            enemyController.addShot(this.x + this.width/2, this.y, -20, 20, ShotType.player0);
+        // shot (with cooldown)
+        if(this.shotCooldownTimer === 0){
+            if(keys[32] || keys[38] || keys[87]) {
+                enemyController.addShot(this.x + this.width/2, this.y, -20, 20, ShotType.player0);
+                this.shotCooldownTimer = 1;
+            }
+        } else {
+            if(this.shotCooldownTimer > this.shotCooldown){
+                this.shotCooldownTimer = 0;
+            } else {
+                this.shotCooldownTimer += gameTime.deltaTime;
+            }
         }
+        
         // !!!
         let opacity = 1;
         if(this.damageEffect){
@@ -238,7 +266,7 @@ function Player(x, y, img) {
 function EnemyController() {
     const arrayOfMeteors = [];
     const arrayOfEnemies = [];
-    const arrayOfShots = [];
+    const arrayOfPlayerShots = [];
 
     this.update = function() {
         // meteors
@@ -260,14 +288,19 @@ function EnemyController() {
         // enemies
         for(let i=0;i<arrayOfEnemies.length;i++){
             arrayOfEnemies[i].update();
+            // delet when enemies die
+            if(arrayOfEnemies[i].isDeadTimer < 0){
+                arrayOfEnemies.splice(i, 1);
+                gameController.addScore(10);
+            }
         }
 
         // shots
-        for(let i=0;i<arrayOfShots.length;i++){
-            arrayOfShots[i].update();
+        for(let i=0;i<arrayOfPlayerShots.length;i++){
+            arrayOfPlayerShots[i].update();
             // delete when shot get out of screen
-            if( (arrayOfShots[i].y + arrayOfShots[i].height) * gameController.unit < -10){
-                arrayOfShots.splice(i, 1);
+            if( (arrayOfPlayerShots[i].y + arrayOfPlayerShots[i].height) * gameController.unit < -10){
+                arrayOfPlayerShots.splice(i, 1);
             }
         }
     }
@@ -290,7 +323,18 @@ function EnemyController() {
             let distancePlayerEnemy = distance(player.x + player.width/2, player.y + player.height/2, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
             if( distancePlayerEnemy < player.radius + arrayOfEnemies[i].radius){
                 player.getDamage(100);
+                arrayOfEnemies[i].getDamage(arrayOfEnemies[i].hp);
                 // end game !!!
+            }
+        }
+        // shots and enemies
+        for(let i=0;i<arrayOfEnemies.length;i++){
+            for(let j=0;j<arrayOfPlayerShots.length;j++){
+                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+                if(distanceShotEnemy < arrayOfEnemies[i].radius){
+                    arrayOfEnemies[i].getDamage(arrayOfPlayerShots[j].dmg);
+                    arrayOfPlayerShots.splice(j, 1);
+                }
             }
         }
     }
@@ -318,7 +362,7 @@ function EnemyController() {
     }
 
     this.addShot = function(x, y, dy, dmg, type) {
-        arrayOfShots.push(new Shot(x, y, dy, dmg,arrayOfShotsImgPath[type]));
+        arrayOfPlayerShots.push(new Shot(x, y, dy, dmg, type));
     }
 }
 
@@ -335,16 +379,46 @@ function Enemy(x, y, type) {
     // game mechanic
     this.img = new Image();
     this.img.src = arrayOfEnemyImgPath[type];
+    this.hp = arrayOfEnemyHP[type];
+    this.damageEffect = false;
+    this.damageEffectTimer = 0;
+    this.isDead - false;
+    this.isDeadTimer = 500;
 
     this.update = function () {
-        //console.log(this.timer, gameTime.deltaTime);
-        this.timer += gameTime.deltaTime;
-        this.dx = calcVelocityX1(this.timer);
-        this.dy = calcVelocityY1(this.timer);
-        this.x += this.dx;
-        this.y += this.dy;
+        let opacity = 1;
+        if(!this.isDead){
+            this.timer += gameTime.deltaTime;
+            this.dx = calcVelocityX1(this.timer);
+            this.dy = calcVelocityY1(this.timer);
+            this.x += this.dx;
+            this.y += this.dy;
 
-        this.draw(1);
+            if(this.damageEffect){
+                if(this.damageEffectTimer < 500){
+                    this.damageEffectTimer += gameTime.deltaTime;
+                    opacity = calcOpacity(this.damageEffectTimer);
+                } else {
+                    this.damageEffect = false;
+                    this.damageEffectTimer = 0;
+                }
+            }
+        } else {
+            this.isDeadTimer -= gameTime.deltaTime;
+            opacity = Math.max(this.isDeadTimer/500, 0);
+        } 
+        
+
+        this.draw(opacity);
+    }
+
+    this.getDamage = function(dmg) {
+        this.hp -= dmg;
+        if(this.hp > 0){
+            this.damageEffect = true;
+        } else {
+            this.isDead = true;
+        }
     }
 
     this.draw = drawFunction;
@@ -389,15 +463,16 @@ function Meteor(x, y, dx, dy, step, type) {
     }
 }
 
-function Shot(x, y, dy, dmg, img) {
+function Shot(x, y, dy, dmg, type) {
     // Position and movment
-    this.x = x;
-    this.y = y;
-    this.dy = dy;
     this.width = 10;
     this.height = 30;
+    this.x = x - this.width/2;
+    this.y = y + this.height;
+    this.dy = dy;
     //
-    this.img = new Image(); this.img.src = img;
+    this.type = type
+    this.img = new Image(); this.img.src = arrayOfShotsImgPath[type];
     this.dmg = dmg;
 
     this.update = function () {
