@@ -9,6 +9,20 @@ canvas.height = innerHeight;
 // Graphics
 let meteorBrownImgPath = "./assets/img/meteorBrown.png";
 let meteorGrayImgPath = "./assets/img/meteorGrey.png";
+const arrayOfEnemyImgPath = []
+arrayOfEnemyImgPath.push("./assets/img/enemy1.png");
+
+// 
+let calcVelocityX1 = function(timer) {
+    timer /= 1000;
+    return 12.2*Math.sin(timer);
+}
+
+let calcVelocityY1 = function(timer) {
+    timer /= 1000;
+    timer += Math.PI/2;
+    return Math.sin(timer) * Math.sin(timer);
+}
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -48,6 +62,7 @@ const keys = {}
 // enumerators
 const State = {game: 1, menu: 2}
 const MeteorType = {brown: 1, grey: 2}
+const EnemyType = {simple: 0}
 
 // Borrowing functions
 let drawFunction = function(opacity) {
@@ -257,7 +272,65 @@ function EnemyController() {
                 }
             }
         }
+        // enemies and player
+        for(let i=0;i<arrayOfEnemies.length;i++){
+            let distancePlayerEnemy = distance(player.x + player.width/2, player.y + player.height/2, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+            if( distancePlayerEnemy < player.radius + arrayOfEnemies[i].radius){
+                player.getDamage(100);
+                // end game !!!
+            }
+        }
     }
+
+    // dev
+
+    this.spawnRandomMeteor = function() {
+        let x, dx;
+        let y = -50;
+        let dy = getRandomBool() ? 1 : 2;
+        let step = getRandomInt(1,3);
+        let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown);
+        if(getRandomBool()){
+            x = 50;
+            dx = getRandomBool() ? 1 : 0.5;
+        } else {
+            x = 1550;
+            dx = getRandomBool() ? -1 : -0.5;
+        }
+        arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+    }
+
+    this.spawnEnemy = function (enemyType) {
+        arrayOfEnemies.push(new Enemy(15,-100,enemyType));
+    }
+}
+
+function Enemy(x, y, type) {
+    // position and movment
+    this.width = 120;
+    this.height = 85;
+    this.radius = 40;
+    this.x = x;
+    this.y = y;
+    this.dx = 0;
+    this.dy = 0;
+    this.timer = 0;
+    // game mechanic
+    this.img = new Image();
+    this.img.src = arrayOfEnemyImgPath[EnemyType.simple];
+
+    this.update = function () {
+        //console.log(this.timer, gameTime.deltaTime);
+        this.timer += gameTime.deltaTime;
+        this.dx = calcVelocityX1(this.timer);
+        this.dy = calcVelocityY1(this.timer);
+        this.x += this.dx;
+        this.y += this.dy;
+
+        this.draw(1);
+    }
+
+    this.draw = drawFunction;
 }
 
 function Meteor(x, y, dx, dy, step, type) {
