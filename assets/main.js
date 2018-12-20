@@ -495,9 +495,8 @@ function animate(time) {
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
         // calc time 
-        gameTime.deltaTime = time - gameTime.lastTime;
+        gameTime.deltaTime = Math.min(32 ,time - gameTime.lastTime);
         gameTime.time += gameTime.deltaTime;
-        //console.log(gameTime.time, gameTime.deltaTime);
         
 
         gameController.update();
