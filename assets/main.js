@@ -1,3 +1,5 @@
+let dev = false;
+
 const canvas = document.querySelector(".o-canvas");
 const c = canvas.getContext("2d");
 
@@ -25,12 +27,18 @@ function getRandomBool() {
     return (Math.random() > 0.5) ? true : false;
 }
 
+function calcOpacity(timer) {
+    opacity = (1/100000)*timer*(timer - 500) + 1; // Quadratic function, value from 1 to ~0.4
+    return Math.min(1, opacity); // prevent opacity greater than 1 
+}
+
 const mouse = {
     x: innerWidth / 2,
     y: innerHeight / 2
 }
 
 const gameTime = {
+    lastTime: 0,
     deltaTime: 0,
     time: 0
 }
@@ -53,6 +61,12 @@ let drawFunction = function(opacity) {
     let height = this.height * gameController.unit;
     c.drawImage(this.img, x, y, width, height);
     c.restore();
+    if(dev){
+        c.beginPath();
+        c.arc(x + width/2, y + height/2, this.radius * gameController.unit, 0, 2 * Math.PI);
+        c.strokeStyle = "#ffffff";
+        c.stroke();
+    }
 };
 
 // Objects
@@ -175,8 +189,7 @@ function Player(x, y, img) {
         if(this.damageEffect){
             if(this.damageEffectTimer < 500){
                 this.damageEffectTimer += gameTime.deltaTime;
-                opacity = (1/100000)*this.damageEffectTimer*(this.damageEffectTimer - 500) + 1; // Quadratic function, value from 1 to ~0.4
-                opacity = Math.min(1, opacity); // prevent opacity greater than 1 
+                opacity = calcOpacity(this.damageEffectTimer);
             } else {
                 this.damageEffect = false;
                 this.damageEffectTimer = 0;
@@ -413,8 +426,10 @@ function animate(time) {
     //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     if(gameController.state === State.game){
         // calc time 
-        gameTime.deltaTime = time - gameTime.time;
-        gameTime.time = time;
+        gameTime.deltaTime = time - gameTime.lastTime;
+        gameTime.time += gameTime.deltaTime;
+        //console.log(gameTime.time, gameTime.deltaTime);
+        
 
         gameController.update();
         
@@ -424,6 +439,7 @@ function animate(time) {
         // colisions
         enemyController.collision();
     }
+    gameTime.lastTime = time;
 }
 
 init();
