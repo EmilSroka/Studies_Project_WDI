@@ -9,8 +9,8 @@ canvas.height = innerHeight;
 // enumerators
 const State = {game: 1, menu: 2}
 const MeteorType = {brown: 1, grey: 2}
-const EnemyType = {simple: 0, fast: 1, tank:2}
-const ShotType = {player0: 0, enemy1:1, enemy2:2}
+const EnemyType = {simple: 0, fast: 1, tank: 2, simpleUpgraded: 3, fastUpgraded: 4, simpleDouble: 5, ufo: 6}
+const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3}
 
 // velocity functions
 let calcVelocityX1 = function(timer) {
@@ -76,6 +76,24 @@ let shot2 = function(){
     }
 }
 
+let shot3 = function(){
+    if(this.shotCooldownTimer === 0){
+        if(Math.abs(this.x - player.x) < 40) {
+            if(Math.random() < this.probability){
+                enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x + 3*this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+            }
+            this.shotCooldownTimer = 1;
+        }
+    } else {
+        if(this.shotCooldownTimer > this.shotCooldown){
+            this.shotCooldownTimer = 0;
+        } else {
+            this.shotCooldownTimer += gameTime.deltaTime;
+        }
+    }
+}
+
 
 // Graphics
 let meteorBrownImgPath = "./assets/img/meteorBrown.png";
@@ -88,12 +106,42 @@ arrayOfParticle.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.pn
 arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed2.png");
+arrayOfShotsImgPath.push("./assets/img/bomb.png");
 
 const arrayOfEnemyData = [];
-arrayOfEnemyData.push([60, 20, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png"]);
-// hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path;
-arrayOfEnemyData.push([40, 20, 20, 300, 0.5, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png"]);
-arrayOfEnemyData.push([200, 60, 20, 2000, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png"]);
+// hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path, width, height, radius;
+arrayOfEnemyData.push([60, 10, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png", 120, 85, 40]);
+arrayOfEnemyData.push([40, 10, 20, 300, 0.1, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png", 100, 110, 50]);
+arrayOfEnemyData.push([200, 40, 30, 2000, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png", 140, 140, 70]);
+arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy4.png", 120, 85, 40]);
+arrayOfEnemyData.push([80, 20, 30, 500, 0.1, ShotType.enemy2, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy5.png", 100, 110, 50]);
+arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 40]);
+arrayOfEnemyData.push([200, 60, 3, 1000, 1, ShotType.enemy3, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy7.png", 140, 60, 40]);
+
+const arrayOfWaveData = [];
+// time, number (id) of enemy
+arrayOfWaveData.push([0, 119000, 0, 0, 0, 0, 0, 0]);
+arrayOfWaveData.push([0, 119000, 0, 1, 0, 1, 0]);
+arrayOfWaveData.push([59000, 239000, 2, 0, 0, 0]);
+arrayOfWaveData.push([59000, 239000, 1, 1, 1, 1, 1]);
+arrayOfWaveData.push([119000, 290000, 3, 3, 3, 3, 3, 3]);
+arrayOfWaveData.push([119000, 290000, 0, 5, 3, 0, 5, 3]);
+arrayOfWaveData.push([119000, 290000, 2, 5, 5, 5, 5]);
+arrayOfWaveData.push([119000, 290000, 4, 1, 4, 1, 3]);
+arrayOfWaveData.push([119000, 290000, 0, 3, 5, 1, 4]);
+arrayOfWaveData.push([239000, 400000, 6, 0, 0, 0, 0]);
+arrayOfWaveData.push([239000, 400000, 2, 2, 2, 1, 1, 1]);
+arrayOfWaveData.push([239000, 400000, 5, 5, 5, 5, 5, 5, 5, 5]);
+arrayOfWaveData.push([239000, 400000, 5, 5, 5, 5, 4, 5, 5]);
+arrayOfWaveData.push([239000, 400000, 5, 6, 5]);
+arrayOfWaveData.push([290000, -1, 6, 5, 6, 5, 6]);
+arrayOfWaveData.push([290000, -1, 6, 4, 6, 4, 6]);
+arrayOfWaveData.push([290000, -1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
+arrayOfWaveData.push([290000, -1, 5, 5, 4, 5, 4, 5, 5, 5, 4, 5, 5]);
+arrayOfWaveData.push([290000, -1, 6, 6, 6]);
+arrayOfWaveData.push([290000, -1, 2, 6, 2]);
+arrayOfWaveData.push([400000, -1, 1, 6, 1, 6, 1, 6, 1, 6, 1]);
+arrayOfWaveData.push([400000, -1, 5, 6, 5, 2, 5, 5, 5, 5, 5, 4, 4, 4,]);
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -300,10 +348,16 @@ function Player(x, y, img) {
     };
 
     this.getDamage = function (dmg) {
-        // update hp and hpBar
-        if(!this.damageEffect){
-            this.hp -= dmg;
+        if(!dev){
+            // update hp and hpBar
+            if(!this.damageEffect){
+                this.hp -= dmg;
+                
+            } else {
+                this.hp -= Math.floor(dmg/2);
+            }
             this.hp = Math.max(0, this.hp);
+            //console.log(this.hp, dmg);
             gameController.updateHpBar(this.hp);
         }
         // start damage effect
@@ -319,8 +373,29 @@ function EnemyController() {
     const arrayOfPlayerShots = [];
     const arrayOfEnemiesShots = [];
     const arrayOfParticle = [];
+    this.waveTimer = -1;
+    this.enemySpawnTimer = -1;
+    this.currentWave = 0;
 
     this.update = function() {
+        // wave start/end
+        if(this.waveTimer < 0){
+            this.waveStart();
+            this.waveTimer = 30000;
+        } else {
+            this.waveTimer -= gameTime.deltaTime;
+        }
+        // spawn enemy
+        if(this.enemySpawnTimer < 0){
+            if(this.currentWave.length > 0){
+                this.spawnEnemy(this.currentWave[0]);
+                this.currentWave.shift();
+            }
+            this.enemySpawnTimer = 1000;
+        } else {
+            this.enemySpawnTimer -= gameTime.deltaTime;
+        }
+
         // meteors
         for(let i=0;i<arrayOfMeteors.length;i++){
             arrayOfMeteors[i].update(); 
@@ -418,6 +493,18 @@ function EnemyController() {
         }
     }
 
+    this.waveStart = function() {
+        let randomWave;
+        do {
+            randomWave = getRandomInt(0, arrayOfWaveData.length-1);
+            //console.log(arrayOfWaveData[randomWave][0], gameTime.time)
+        } while(arrayOfWaveData[randomWave][0] > gameTime.time && (arrayOfWaveData[randomWave][1] < gameTime.time || arrayOfWaveData[randomWave][1] !== -1));
+        //console.log(randomWave);
+        this.currentWave = arrayOfWaveData[randomWave].slice();
+        this.currentWave.shift();
+        this.currentWave.shift();
+    }
+
     // dev
 
     this.spawnRandomMeteor = function() {
@@ -437,7 +524,7 @@ function EnemyController() {
     }
 
     this.spawnEnemy = function(enemyType) {
-        arrayOfEnemies.push(new Enemy(15,-100,enemyType));
+        arrayOfEnemies.push(new Enemy(15,-220,enemyType));
     }
 
     this.addPlayerShot = function(x, y, dy, dmg, type) {
@@ -455,9 +542,9 @@ function EnemyController() {
 
 function Enemy(x, y, type) {
     // position and movment
-    this.width = 120;
-    this.height = 85;
-    this.radius = 40; // when calc colision with player
+    this.width = arrayOfEnemyData[type][10];
+    this.height = arrayOfEnemyData[type][11];
+    this.radius = arrayOfEnemyData[type][12];
     this.x = x;
     this.y = y;
     this.dx = 0;
@@ -503,7 +590,9 @@ function Enemy(x, y, type) {
                 }
             }
 
-            this.shot();
+            if(this.y > 0){
+                this.shot();
+            }
         } else {
             this.isDeadTimer -= gameTime.deltaTime;
             opacity = Math.max(this.isDeadTimer/500, 0);
@@ -593,16 +682,16 @@ function Shot(x, y, dy, dmg, type) {
     this.y = y + this.height;
     this.dy = dy;
     //
-    this.type = type
+    this.type = type;
     this.img = new Image(); this.img.src = arrayOfShotsImgPath[type];
     this.dmg = dmg;
-
+    //console.log(this.type, this.img);
     this.update = function () {
         this.y += this.dy;
         this.draw();
     }
 
-    this.draw = this.draw = drawFunction;
+    this.draw = drawFunction;
 }
 
 function Star(x, y, radius, isStatic) {
