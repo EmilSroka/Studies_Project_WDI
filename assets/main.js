@@ -6,6 +6,12 @@ const c = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+// enumerators
+const State = {game: 1, menu: 2}
+const MeteorType = {brown: 1, grey: 2}
+const EnemyType = {simple: 0, fast: 1, tank:2}
+const ShotType = {player0: 0, enemy1:1, enemy2:2}
+
 // velocity functions
 let calcVelocityX1 = function(timer) {
     timer /= 2000;
@@ -29,28 +35,91 @@ let calcVelocityY2 = function(timer) {
     return Math.sin(timer) * Math.sin(timer);
 }
 
+let calcVelocityX3 = function(timer) {
+    timer /= 2000;
+    timer += Math.PI/4;
+    let tmp = Math.floor(timer / (Math.PI * 9));
+    let sign = (tmp % 2 == 0 ? 1 : -1);
+    return sign * Math.sin(timer) * Math.sin(timer);
+}
+
+let calcVelocityY3 = function(timer) {
+    timer /= 2000;
+    return 2 * Math.sin(timer);
+}
+// shots functions
+let shot1 = function(){
+    if(this.shotCooldownTimer === 0){
+        if(Math.abs(this.x - player.x) < 40) {
+            if(Math.random() < this.probability){
+                enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+            }
+            this.shotCooldownTimer = 1;
+        }
+    } else {
+        if(this.shotCooldownTimer > this.shotCooldown){
+            this.shotCooldownTimer = 0;
+        } else {
+            this.shotCooldownTimer += gameTime.deltaTime;
+        }
+    }
+}
+
+let shot2 = function(){
+    if(this.shotCooldownTimer < this.shotCooldown){
+        if(Math.abs(this.x - player.x) < 40) {
+            this.shotCooldownTimer += gameTime.deltaTime;
+        }
+    } else {
+        enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+        this.shotCooldownTimer = 0;
+    }
+}
+
+
 // Graphics
 let meteorBrownImgPath = "./assets/img/meteorBrown.png";
 let meteorGrayImgPath = "./assets/img/meteorGrey.png";
-const arrayOfEnemyImgPath = [];
+
 const arrayOfShotsImgPath = [];
-const arrayOfEnemyHP = [];
-const arrayOfEnemyVelX = [];
-const arrayOfEnemyVelY = [];
-const arrayOfEnemyProb = []; // probability of shot
-arrayOfEnemyImgPath.push("./assets/img/enemy1.png");
-arrayOfEnemyImgPath.push("./assets/img/enemy2.png");
+const arrayOfParticle = [];
+arrayOfParticle.push(["./assets/img/laserBlueP1.png", "./assets/img/laserBlueP2.png"]);
+arrayOfParticle.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.png"]);
 arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed.png");
-arrayOfEnemyHP.push(60);
-arrayOfEnemyHP.push(40);
+arrayOfShotsImgPath.push("./assets/img/laserRed2.png");
+
+const arrayOfEnemyData = [];
+arrayOfEnemyData.push([60, 20, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png"]);
+// hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path;
+arrayOfEnemyData.push([40, 20, 20, 300, 0.5, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png"]);
+arrayOfEnemyData.push([200, 60, 20, 2000, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png"]);
+
+/*
+const arrayOfEnemyImgPath = [];
+arrayOfEnemyImgPath.push("./assets/img/enemy1.png");
+arrayOfEnemyImgPath.push("./assets/img/enemy2.png");
+arrayOfEnemyImgPath.push("./assets/img/enemy3.png");
+//arrayOfEnemyHP.push(60);
+//arrayOfEnemyHP.push(40);
+//arrayOfEnemyHP.push(200);
+//arrayOfEnemyCooldown.push(300);
+//arrayOfEnemyCooldown.push(300);
+//arrayOfEnemyCooldown.push(150);
 arrayOfEnemyVelX.push(calcVelocityX1);
 arrayOfEnemyVelX.push(calcVelocityX2);
+arrayOfEnemyVelX.push(calcVelocityX3);
 arrayOfEnemyVelY.push(calcVelocityY1);
 arrayOfEnemyVelY.push(calcVelocityY2);
-arrayOfEnemyProb.push(0.2);
-arrayOfEnemyProb.push(0.05);
-//console.log(arrayOfEnemyVelY[1]);
+arrayOfEnemyVelY.push(calcVelocityY3);
+//arrayOfEnemyProb.push(0.2);
+//arrayOfEnemyProb.push(0.05);
+//arrayOfEnemyProb.push(0.5);
+//arrayOfEnemyShot.push(ShotType.enemy1);
+//arrayOfEnemyShot.push(ShotType.enemy1);
+//arrayOfEnemyShot.push(ShotType.enemy1);
+//console.log(arrayOfEnemyVelY[1]); */
+
 
 // Util functions
 function distance(x1, y1, x2, y2){
@@ -86,12 +155,6 @@ const gameTime = {
 }
 
 const keys = {}
-
-// enumerators
-const State = {game: 1, menu: 2}
-const MeteorType = {brown: 1, grey: 2}
-const EnemyType = {simple: 0, fast: 1}
-const ShotType = {player0: 0, enemy1:1}
 
 // Borrowing functions
 let drawFunction = function(opacity) {
@@ -264,9 +327,11 @@ function Player(x, y, img) {
 
     this.getDamage = function (dmg) {
         // update hp and hpBar
-        this.hp -= dmg;
-        this.hp = Math.max(0, this.hp);
-        gameController.updateHpBar(this.hp);
+        if(!this.damageEffect){
+            this.hp -= dmg;
+            this.hp = Math.max(0, this.hp);
+            gameController.updateHpBar(this.hp);
+        }
         // start damage effect
         this.damageEffect = true;
     }
@@ -358,7 +423,7 @@ function EnemyController() {
         }
         // shots and player
         for(let i=0;i<arrayOfEnemiesShots.length;i++){
-            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x, player.y);
+            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x + player.width/2, player.y + player.height/2);
             if(distanceShotEnemy < player.radius){
                 
                 player.getDamage(arrayOfEnemiesShots[i].dmg);
@@ -410,19 +475,24 @@ function Enemy(x, y, type) {
     this.timer = 0;
     // game mechanic
     this.img = new Image();
-    this.img.src = arrayOfEnemyImgPath[type];
-    this.hp = arrayOfEnemyHP[type];
+    this.img.src = arrayOfEnemyData[type][9];
+    this.hp = arrayOfEnemyData[type][0];
     this.damageEffect = false;
     this.damageEffectTimer = 0;
     this.isDead - false;
     this.isDeadTimer = 500;
     // shot
-    this.shotCooldown = 300;
+    this.shotCooldown = arrayOfEnemyData[type][3];
     this.shotCooldownTimer = 0;
+    this.shotType = arrayOfEnemyData[type][5];
+    this.dmg = arrayOfEnemyData[type][1];
+    this.shotSpeed = arrayOfEnemyData[type][2]
 
-    this.calcDx = arrayOfEnemyVelX[type];
-    this.calcDy = arrayOfEnemyVelY[type];
-    this.probability = arrayOfEnemyProb[type];
+    this.calcDx = arrayOfEnemyData[type][6];
+    this.calcDy = arrayOfEnemyData[type][7];
+    this.probability = arrayOfEnemyData[type][4];
+
+    this.shot = arrayOfEnemyData[type][8];
 
     this.update = function () {
         let opacity = 1;
@@ -430,6 +500,9 @@ function Enemy(x, y, type) {
             this.timer += gameTime.deltaTime;
             this.dx = this.calcDx(this.timer);
             this.dy = this.calcDy(this.timer);
+
+            this.shot();
+
             this.x += this.dx;
             this.y += this.dy;
 
@@ -443,21 +516,7 @@ function Enemy(x, y, type) {
                 }
             }
 
-            // shot (with cooldown)
-        if(this.shotCooldownTimer === 0){
-            if(Math.abs(this.x - player.x) < 40) {
-                if(Math.random() < this.probability){
-                    enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, 20, 20, ShotType.enemy1);
-                }
-                this.shotCooldownTimer = 1;
-            }
-        } else {
-            if(this.shotCooldownTimer > this.shotCooldown){
-                this.shotCooldownTimer = 0;
-            } else {
-                this.shotCooldownTimer += gameTime.deltaTime;
-            }
-        }
+            
         } else {
             this.isDeadTimer -= gameTime.deltaTime;
             opacity = Math.max(this.isDeadTimer/500, 0);
