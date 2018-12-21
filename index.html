@@ -13,7 +13,7 @@
 </head>
 <body>
     <canvas class="o-canvas">Twoja przeglądrka nie wspiera elementu canvas!</canvas>
-    <main class="o-interface">
+    <main class="o-interface" id="menu">
         <h1 class="c-heading">Space invaders</h1>
         <div class="o-interface__buttons">
             <button class="c-button c-button--primary" id="start-button">Graj</button>
@@ -26,5 +26,9 @@
         <span style="width: 100%;"></span>
     </div>
     <p class="c-score hide">Wynik: 0</p>
+    <div class="o-interface hide" id="end-game">
+        <h1 class="c-heading">Koniec gry</h1>
+        <button class="c-button c-button--primary" id="reload">Zagraj ponownie</button>
+    </div>
 </body>
 </html>

@@ -204,7 +204,9 @@ function GameController() {
     this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // calc game unit
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
     // html elements
-    this.interface = document.querySelector(".o-interface");
+    this.endBoard = document.getElementById("end-game");
+    this.reloadButton = document.getElementById("reload");
+    this.interface = document.getElementById("menu");
     this.startButton = document.getElementById("start-button");
     this.exitButton = document.getElementById("exit-button");
     this.hpBar = document.querySelector(".c-bar");
@@ -229,8 +231,8 @@ function GameController() {
         }
     }
 
-    this.startMenu = function () {
-        this.interface.classList.remove("hide");
+    this.loseGame = function () {
+        this.endBoard.classList.remove("hide");
         this.hpBar.classList.add("hide");
         this.scoreP.classList.add("hide");
         this.state = State.menu;
@@ -359,6 +361,10 @@ function Player(x, y, img) {
             this.hp = Math.max(0, this.hp);
             //console.log(this.hp, dmg);
             gameController.updateHpBar(this.hp);
+
+            if(this.hp === 0){
+                gameController.loseGame();
+            }
         }
         // start damage effect
         this.damageEffect = true;
@@ -807,6 +813,10 @@ gameController.startButton.addEventListener("click", function() {
 
 gameController.exitButton.addEventListener("click", function() {
     gameController.endGame();
+});
+
+gameController.reloadButton.addEventListener("click", function() {
+    location.reload();
 });
 // Update key object
 window.onkeyup = function(e) { keys[e.keyCode] = false; };
