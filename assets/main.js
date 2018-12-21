@@ -318,6 +318,7 @@ function EnemyController() {
     const arrayOfEnemies = [];
     const arrayOfPlayerShots = [];
     const arrayOfEnemiesShots = [];
+    const arrayOfParticle = [];
 
     this.update = function() {
         // meteors
@@ -361,6 +362,15 @@ function EnemyController() {
                 arrayOfEnemiesShots.splice(i, 1);
             }
         }
+
+        // particle
+        for(let i=0;i<arrayOfParticle.length;i++){
+            arrayOfParticle[i].update();
+            // delete when shot get out of screen
+            if(arrayOfParticle[i].counter === 2){
+                arrayOfParticle.splice(i, 1);
+            }
+        }
     }
 
     this.collision = function() {
@@ -390,6 +400,7 @@ function EnemyController() {
             for(let j=0;j<arrayOfPlayerShots.length;j++){
                 let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
                 if(distanceShotEnemy < arrayOfEnemies[i].radius){
+                    this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
                     arrayOfEnemies[i].getDamage(arrayOfPlayerShots[j].dmg);
                     arrayOfPlayerShots.splice(j, 1);
                 }
@@ -400,6 +411,7 @@ function EnemyController() {
             let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x + player.width/2, player.y + player.height/2);
             if(distanceShotEnemy < player.radius){
                 
+                this.addParticle(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, 1);
                 player.getDamage(arrayOfEnemiesShots[i].dmg);
                 arrayOfEnemiesShots.splice(i, 1);
             }
@@ -549,6 +561,28 @@ function Meteor(x, y, dx, dy, step, type) {
         c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
         c.restore();
     }
+}
+
+function Particle(x, y, type) {
+    this.x = x;
+    this.y = y;
+    this.width = 50;
+    this.height = 50;
+    this.type = type;
+    this.counter = 0;
+    this.img = new Image();
+    this.img.src = arrayOfParticle[type][0];
+
+    this.update = function() {
+        let opacity = this.counter < 2 ? 1 : 0.5;
+        if(this.counter === 1){
+            this.img.src = arrayOfParticle[type][1];
+        }
+        this.counter++;
+        this.draw(opacity);
+    }
+
+    this.draw = drawFunction;
 }
 
 function Shot(x, y, dy, dmg, type) {
