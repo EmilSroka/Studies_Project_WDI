@@ -95,32 +95,6 @@ arrayOfEnemyData.push([60, 20, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, ca
 arrayOfEnemyData.push([40, 20, 20, 300, 0.5, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png"]);
 arrayOfEnemyData.push([200, 60, 20, 2000, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png"]);
 
-/*
-const arrayOfEnemyImgPath = [];
-arrayOfEnemyImgPath.push("./assets/img/enemy1.png");
-arrayOfEnemyImgPath.push("./assets/img/enemy2.png");
-arrayOfEnemyImgPath.push("./assets/img/enemy3.png");
-//arrayOfEnemyHP.push(60);
-//arrayOfEnemyHP.push(40);
-//arrayOfEnemyHP.push(200);
-//arrayOfEnemyCooldown.push(300);
-//arrayOfEnemyCooldown.push(300);
-//arrayOfEnemyCooldown.push(150);
-arrayOfEnemyVelX.push(calcVelocityX1);
-arrayOfEnemyVelX.push(calcVelocityX2);
-arrayOfEnemyVelX.push(calcVelocityX3);
-arrayOfEnemyVelY.push(calcVelocityY1);
-arrayOfEnemyVelY.push(calcVelocityY2);
-arrayOfEnemyVelY.push(calcVelocityY3);
-//arrayOfEnemyProb.push(0.2);
-//arrayOfEnemyProb.push(0.05);
-//arrayOfEnemyProb.push(0.5);
-//arrayOfEnemyShot.push(ShotType.enemy1);
-//arrayOfEnemyShot.push(ShotType.enemy1);
-//arrayOfEnemyShot.push(ShotType.enemy1);
-//console.log(arrayOfEnemyVelY[1]); */
-
-
 // Util functions
 function distance(x1, y1, x2, y2){
     return Math.floor(Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
@@ -461,13 +435,17 @@ function EnemyController() {
     this.addEnemyShot = function(x, y, dy, dmg, type) {
         arrayOfEnemiesShots.push(new Shot(x, y, dy, dmg, type));
     }
+
+    this.addParticle = function(x, y, type) {
+        arrayOfParticle.push(new Particle(x, y, type));
+    }
 }
 
 function Enemy(x, y, type) {
     // position and movment
     this.width = 120;
     this.height = 85;
-    this.radius = 40;
+    this.radius = 40; // when calc colision with player
     this.x = x;
     this.y = y;
     this.dx = 0;
@@ -500,9 +478,6 @@ function Enemy(x, y, type) {
             this.timer += gameTime.deltaTime;
             this.dx = this.calcDx(this.timer);
             this.dy = this.calcDy(this.timer);
-
-            this.shot();
-
             this.x += this.dx;
             this.y += this.dy;
 
@@ -516,7 +491,7 @@ function Enemy(x, y, type) {
                 }
             }
 
-            
+            this.shot();
         } else {
             this.isDeadTimer -= gameTime.deltaTime;
             opacity = Math.max(this.isDeadTimer/500, 0);
