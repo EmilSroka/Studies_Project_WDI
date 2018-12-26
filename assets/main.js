@@ -112,7 +112,7 @@ const arrayOfEnemyData = [];
 // hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path, width, height, radius;
 arrayOfEnemyData.push([60, 10, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png", 120, 85, 40]);
 arrayOfEnemyData.push([40, 10, 20, 300, 0.1, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png", 100, 110, 50]);
-arrayOfEnemyData.push([200, 40, 30, 2000, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png", 140, 140, 70]);
+arrayOfEnemyData.push([200, 40, 30, 1500, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png", 140, 140, 70]);
 arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy4.png", 120, 85, 40]);
 arrayOfEnemyData.push([80, 20, 30, 500, 0.1, ShotType.enemy2, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy5.png", 100, 110, 50]);
 arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 40]);
@@ -301,7 +301,7 @@ function Player(x, y, img) {
             } else if(keys[68] || keys[39]) {
                 this.dx = lerp(this.dx, this.dxLimit, 0.6);
             } else {
-                this.dx = lerp(this.dx, 0, 0.07);
+                this.dx = lerp(this.dx, 0, 0.15);
             }
         } else if(this.inertnessTimer < 300) {
             this.inertnessTimer += gameTime.deltaTime;
