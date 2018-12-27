@@ -10,7 +10,8 @@ canvas.height = innerHeight;
 const State = {game: 1, menu: 2}
 const MeteorType = {brown: 0, grey: 1, brownSmall: 2, graySmall: 3}
 const EnemyType = {simple: 0, fast: 1, tank: 2, simpleUpgraded: 3, fastUpgraded: 4, simpleDouble: 5, ufo: 6}
-const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3}
+const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3, player1: 4}
+const PowerUpType = {hp:0, shield:1, power:2, double:3}
 
 // velocity functions
 let calcVelocityX1 = function(timer) {
@@ -101,12 +102,19 @@ let meteorGrayImgPath = "./assets/img/meteorGrey.png";
 
 const arrayOfShotsImgPath = [];
 const arrayOfParticle = [];
+const arrayOfShieldImgPath = [];
+const arrayOfPowerUpImgPath = [];
 arrayOfParticle.push(["./assets/img/laserBlueP1.png", "./assets/img/laserBlueP2.png"]);
 arrayOfParticle.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.png"]);
 arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed2.png");
 arrayOfShotsImgPath.push("./assets/img/bomb.png");
+arrayOfShotsImgPath.push("./assets/img/laserBlue2.png");
+arrayOfPowerUpImgPath.push("./assets/img/puHealt.png");
+arrayOfPowerUpImgPath.push("./assets/img/puShield.png");
+arrayOfPowerUpImgPath.push("./assets/img/puPower.png");
+arrayOfPowerUpImgPath.push("./assets/img/puDouble.png");
 
 const arrayOfEnemyData = [];
 // hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path, width, height, radius;
@@ -288,7 +296,7 @@ function Player(x, y, img) {
     // movement and position (game unit)
     this.width = 120;
     this.height = 80;
-    this.radius = 40;
+    this.radius = 45;
     this.x = x;
     this.y = y - this.height/2 - 10;
     this.dx = 0;
@@ -300,10 +308,19 @@ function Player(x, y, img) {
     this.damageEffect = false;
     this.damageEffectTimer = 0;
     this.img = new Image(); this.img.src = img;
+
+    this.shotType = 0;
+    this.shotSpeed = 20;
+    this.shotDmg = 20;
     // shot
     this.shotCooldown = 300;
     this.shotCooldownTimer = 0;
-    
+    // powerups
+    this.puDoubleShot = false;
+    this.puBeterShot = false;
+    this.puShield = false;
+    this.shieldImg = new Image();  this.shieldImg.src = "./assets/img/shield.png";
+    this.shieldOpacity = 0;
 
     this.update = function () {
         // calc velocity
@@ -333,7 +350,12 @@ function Player(x, y, img) {
         // shot (with cooldown)
         if(this.shotCooldownTimer === 0){
             if(keys[32] || keys[38] || keys[87]) {
-                enemyController.addPlayerShot(this.x, this.y - this.height/4, -20, 20, ShotType.player0);
+                if(this.puDoubleShot){
+                    enemyController.addPlayerShot(this.x - this.width/5, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                    enemyController.addPlayerShot(this.x + this.width/5, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                } else {
+                    enemyController.addPlayerShot(this.x, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                }
                 this.shotCooldownTimer = 1;
             }
         } else {
@@ -359,27 +381,99 @@ function Player(x, y, img) {
         // move and draw
         this.x += this.dx;
         this.draw(opacity);
+        //drav shield
+        if(this.shieldOpacity >= 0){
+            this.drawShield();
+            if(!this.puShield){
+                this.shieldOpacity -= gameTime.deltaTime/300;
+            }
+        }
     };
 
     this.getDamage = function (dmg) {
-        if(!dev){
+        if(!this.puShield){
             // update hp and hpBar
             if(!this.damageEffect){
                 this.hp -= dmg;
-                
-            } else {
-                this.hp -= Math.floor(dmg/2);
+            }
+            if(dev){
+                this.hp = 100;
             }
             this.hp = Math.max(0, this.hp);
-            //console.log(this.hp, dmg);
             gameController.updateHpBar(this.hp);
-
             if(this.hp === 0){
                 gameController.loseGame();
             }
+            // start damage effect
+            this.damageEffect = true;
+            this.pUBetterShot(false);
+            this.pUDoubleShot(false);
+        } else {
+            this.PUShield(false);
         }
-        // start damage effect
-        this.damageEffect = true;
+    }
+
+    this.drawShield = function() {
+        c.save();
+        let x = gameController.startPoint + this.x * gameController.unit;
+        let y = this.y * gameController.unit;
+        let width = (this.width+30) * gameController.unit;
+        let height = (this.height+30) * gameController.unit;
+        c.translate(x,y);
+        c.globalAlpha = this.shieldOpacity;
+        c.drawImage(this.shieldImg, -(1/2)*width, -(1/2)*height, width, height);
+        c.restore();
+    }
+
+    this.pUDoubleShot = function (flag){
+        this.puDoubleShot = flag;
+    }
+
+    this.pUBetterShot = function (flag){
+        this.puBeterShot = flag;
+        if(flag){
+            this.shotType = 4;
+            this.shotDmg = 40;
+            this.shotSpeed = 25;
+        } else {
+            this.shotType = 0;
+            this.shotDmg = 20;
+            this.shotSpeed = 20;
+        }
+    }
+
+    this.pUShield = function (flag){
+        this.puShield = flag;
+        if(flag){
+            this.shieldOpacity = 1;
+        } 
+    }
+
+    this.addHP = function (toAdd){
+        this.hp += toAdd;
+        this.hp = Math.min(100, this.hp);
+        gameController.updateHpBar(this.hp);
+    }
+
+    this.draw = drawFunction;
+}
+
+
+function PowerUp(x, y, type) {
+    this.width = 40;
+    this.height = 50;
+    this.radius = 20;
+    this.x = x;
+    this.y = y;
+    this.dy = 3;
+    this.img =new Image();
+    this.img.src = arrayOfPowerUpImgPath[type];
+    this.type = type;
+
+    this.update = function () {
+        this.y += this.dy;
+
+        this.draw();
     }
 
     this.draw = drawFunction;
@@ -391,6 +485,7 @@ function EnemyController() {
     const arrayOfPlayerShots = [];
     const arrayOfEnemiesShots = [];
     const arrayOfParticle = [];
+    const arrayOfPowerUps = [];
     this.waveTimer = -1;
     this.enemySpawnTimer = -1;
     this.currentWave = 0;
@@ -430,6 +525,9 @@ function EnemyController() {
                         this.spawnMiniMeteor(x + Math.random()*10 - 5, y + Math.random()*10 - 5, -1, -1, type);
                     }
                     this.spawnMiniMeteor(x, y, dx, dy, type);
+                    if(Math.random() < 0.3){
+                        this.spawnPowerUp(x, y, getRandomInt(0, 3));
+                    }
                 }   
                 arrayOfMeteors.splice(i, 1);
                 continue;
@@ -456,6 +554,11 @@ function EnemyController() {
                 arrayOfEnemies.splice(i, 1);
                 gameController.addScore(10);
             }
+        }
+
+        // power ups
+        for(let i=0;i<arrayOfPowerUps.length;i++){
+            arrayOfPowerUps[i].update();
         }
 
         // shots
@@ -492,8 +595,6 @@ function EnemyController() {
                 if(!arrayOfMeteors[i].hitPlayer){
                     player.getDamage(arrayOfMeteors[i].dmg);
                     arrayOfMeteors[i].hitPlayer = true;
-                    //console.log(player.x, player.y, player.x + player.width/2, player.y + player.height/2);
-                    //console.log(arrayOfMeteors[i].x, arrayOfMeteors[i].y, arrayOfMeteors[i].x + arrayOfMeteors[i].width/2, arrayOfMeteors[i].y + arrayOfMeteors[i].height/2);
                 }
             }
         }
@@ -527,6 +628,27 @@ function EnemyController() {
                 arrayOfEnemiesShots.splice(i, 1);
             }
         }
+        // powerup and player
+        for(let i=0;i<arrayOfPowerUps.length;i++){
+            let distanceShotEnemy = distance(arrayOfPowerUps[i].x, arrayOfPowerUps[i].y, player.x, player.y);
+            if(distanceShotEnemy < player.radius + arrayOfPowerUps[i].radius){
+                switch(arrayOfPowerUps[i].type){
+                    case PowerUpType.hp:
+                        player.addHP(20);
+                        break;
+                    case PowerUpType.shield:
+                        player.pUShield(true);
+                        break;
+                    case PowerUpType.power:
+                        player.pUBetterShot(true);
+                        break;
+                    case PowerUpType.double:
+                        player.pUDoubleShot(true);
+                        break;
+                }
+                arrayOfPowerUps.splice(i, 1);
+            }
+        }
         // shots and meteors
         for(let i=0;i<arrayOfMeteors.length;i++){
             for(let j=0;j<arrayOfPlayerShots.length;j++){
@@ -544,9 +666,7 @@ function EnemyController() {
         let randomWave;
         do {
             randomWave = getRandomInt(0, arrayOfWaveData.length-1);
-            //console.log(arrayOfWaveData[randomWave][0], gameTime.time)
         } while(arrayOfWaveData[randomWave][0] > gameTime.time && (arrayOfWaveData[randomWave][1] < gameTime.time || arrayOfWaveData[randomWave][1] !== -1));
-        //console.log(randomWave);
         this.currentWave = arrayOfWaveData[randomWave].slice();
         this.currentWave.shift();
         this.currentWave.shift();
@@ -595,6 +715,10 @@ function EnemyController() {
 
     this.addParticle = function(x, y, type) {
         arrayOfParticle.push(new Particle(x, y, type));
+    }
+
+    this.spawnPowerUp = function(x, y, type) {
+        arrayOfPowerUps.push(new PowerUp(x, y, type));
     }
 }
 
@@ -738,7 +862,7 @@ function Shot(x, y, dy, dmg, type) {
     this.type = type;
     this.img = new Image(); this.img.src = arrayOfShotsImgPath[type];
     this.dmg = dmg;
-    //console.log(this.type, this.img);
+    
     this.update = function () {
         this.y += this.dy;
         this.draw();
@@ -875,7 +999,9 @@ function animate(time) {
     c.clearRect(0, 0, canvas.width, canvas.height);
     
     background.draw();
-    //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    if(dev){
+        c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    }
     if(gameController.state === State.game){
         // calc time 
         gameTime.deltaTime = Math.min(32 ,time - gameTime.lastTime);
