@@ -485,6 +485,7 @@ function EnemyController() {
     const arrayOfPlayerShots = [];
     const arrayOfEnemiesShots = [];
     const arrayOfParticle = [];
+    const arrayOfPowerUps = [];
     this.waveTimer = -1;
     this.enemySpawnTimer = -1;
     this.currentWave = 0;
@@ -524,6 +525,9 @@ function EnemyController() {
                         this.spawnMiniMeteor(x + Math.random()*10 - 5, y + Math.random()*10 - 5, -1, -1, type);
                     }
                     this.spawnMiniMeteor(x, y, dx, dy, type);
+                    if(Math.random() < 0.3){
+                        this.spawnPowerUp(x, y, getRandomInt(0, 3));
+                    }
                 }   
                 arrayOfMeteors.splice(i, 1);
                 continue;
@@ -550,6 +554,11 @@ function EnemyController() {
                 arrayOfEnemies.splice(i, 1);
                 gameController.addScore(10);
             }
+        }
+
+        // power ups
+        for(let i=0;i<arrayOfPowerUps.length;i++){
+            arrayOfPowerUps[i].update();
         }
 
         // shots
@@ -619,6 +628,27 @@ function EnemyController() {
                 arrayOfEnemiesShots.splice(i, 1);
             }
         }
+        // powerup and player
+        for(let i=0;i<arrayOfPowerUps.length;i++){
+            let distanceShotEnemy = distance(arrayOfPowerUps[i].x, arrayOfPowerUps[i].y, player.x, player.y);
+            if(distanceShotEnemy < player.radius + arrayOfPowerUps[i].radius){
+                switch(arrayOfPowerUps[i].type){
+                    case PowerUpType.hp:
+                        player.addHP(20);
+                        break;
+                    case PowerUpType.shield:
+                        player.pUShield(true);
+                        break;
+                    case PowerUpType.power:
+                        player.pUBetterShot(true);
+                        break;
+                    case PowerUpType.double:
+                        player.pUDoubleShot(true);
+                        break;
+                }
+                arrayOfPowerUps.splice(i, 1);
+            }
+        }
         // shots and meteors
         for(let i=0;i<arrayOfMeteors.length;i++){
             for(let j=0;j<arrayOfPlayerShots.length;j++){
@@ -685,6 +715,10 @@ function EnemyController() {
 
     this.addParticle = function(x, y, type) {
         arrayOfParticle.push(new Particle(x, y, type));
+    }
+
+    this.spawnPowerUp = function(x, y, type) {
+        arrayOfPowerUps.push(new PowerUp(x, y, type));
     }
 }
 
