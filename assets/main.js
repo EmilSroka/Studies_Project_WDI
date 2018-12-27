@@ -10,7 +10,8 @@ canvas.height = innerHeight;
 const State = {game: 1, menu: 2}
 const MeteorType = {brown: 0, grey: 1, brownSmall: 2, graySmall: 3}
 const EnemyType = {simple: 0, fast: 1, tank: 2, simpleUpgraded: 3, fastUpgraded: 4, simpleDouble: 5, ufo: 6}
-const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3}
+const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3, player1: 4}
+const PowerUpType = {hp:0, shield:1, power:2, double:3}
 
 // velocity functions
 let calcVelocityX1 = function(timer) {
@@ -101,12 +102,19 @@ let meteorGrayImgPath = "./assets/img/meteorGrey.png";
 
 const arrayOfShotsImgPath = [];
 const arrayOfParticle = [];
+const arrayOfShieldImgPath = [];
+const arrayOfPowerUpImgPath = [];
 arrayOfParticle.push(["./assets/img/laserBlueP1.png", "./assets/img/laserBlueP2.png"]);
 arrayOfParticle.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.png"]);
 arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed2.png");
 arrayOfShotsImgPath.push("./assets/img/bomb.png");
+arrayOfShotsImgPath.push("./assets/img/laserBlue2.png");
+arrayOfPowerUpImgPath.push("./assets/img/puHealt.png");
+arrayOfPowerUpImgPath.push("./assets/img/puShield.png");
+arrayOfPowerUpImgPath.push("./assets/img/puPower.png");
+arrayOfPowerUpImgPath.push("./assets/img/puDouble.png");
 
 const arrayOfEnemyData = [];
 // hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path, width, height, radius;
@@ -378,8 +386,69 @@ function Player(x, y, img) {
                 gameController.loseGame();
             }
         }
-        // start damage effect
-        this.damageEffect = true;
+    }
+
+    this.drawShield = function() {
+        c.save();
+        let x = gameController.startPoint + this.x * gameController.unit;
+        let y = this.y * gameController.unit;
+        let width = (this.width+30) * gameController.unit;
+        let height = (this.height+30) * gameController.unit;
+        c.translate(x,y);
+        c.globalAlpha = this.shieldOpacity;
+        c.drawImage(this.shieldImg, -(1/2)*width, -(1/2)*height, width, height);
+        c.restore();
+    }
+
+    this.pUDoubleShot = function (flag){
+        this.puDoubleShot = flag;
+    }
+
+    this.pUBetterShot = function (flag){
+        this.puBeterShot = flag;
+        if(flag){
+            this.shotType = 4;
+            this.shotDmg = 40;
+            this.shotSpeed = 25;
+        } else {
+            this.shotType = 0;
+            this.shotDmg = 20;
+            this.shotSpeed = 20;
+        }
+    }
+
+    this.pUShield = function (flag){
+        this.puShield = flag;
+        if(flag){
+            this.shieldOpacity = 1;
+        } 
+    }
+
+    this.addHP = function (toAdd){
+        this.hp += toAdd;
+        this.hp = Math.min(100, this.hp);
+        gameController.updateHpBar(this.hp);
+    }
+
+    this.draw = drawFunction;
+}
+
+
+function PowerUp(x, y, type) {
+    this.width = 40;
+    this.height = 50;
+    this.radius = 20;
+    this.x = x;
+    this.y = y;
+    this.dy = 3;
+    this.img =new Image();
+    this.img.src = arrayOfPowerUpImgPath[type];
+    this.type = type;
+
+    this.update = function () {
+        this.y += this.dy;
+
+        this.draw();
     }
 
     this.draw = drawFunction;
