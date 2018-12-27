@@ -308,10 +308,19 @@ function Player(x, y, img) {
     this.damageEffect = false;
     this.damageEffectTimer = 0;
     this.img = new Image(); this.img.src = img;
+
+    this.shotType = 0;
+    this.shotSpeed = 20;
+    this.shotDmg = 20;
     // shot
     this.shotCooldown = 300;
     this.shotCooldownTimer = 0;
-    
+    // powerups
+    this.puDoubleShot = false;
+    this.puBeterShot = false;
+    this.puShield = false;
+    this.shieldImg = new Image();  this.shieldImg.src = "./assets/img/shield.png";
+    this.shieldOpacity = 0;
 
     this.update = function () {
         // calc velocity
@@ -341,7 +350,12 @@ function Player(x, y, img) {
         // shot (with cooldown)
         if(this.shotCooldownTimer === 0){
             if(keys[32] || keys[38] || keys[87]) {
-                enemyController.addPlayerShot(this.x, this.y - this.height/4, -20, 20, ShotType.player0);
+                if(this.puDoubleShot){
+                    enemyController.addPlayerShot(this.x - this.width/5, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                    enemyController.addPlayerShot(this.x + this.width/5, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                } else {
+                    enemyController.addPlayerShot(this.x, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
+                }
                 this.shotCooldownTimer = 1;
             }
         } else {
@@ -367,24 +381,35 @@ function Player(x, y, img) {
         // move and draw
         this.x += this.dx;
         this.draw(opacity);
+        //drav shield
+        if(this.shieldOpacity >= 0){
+            this.drawShield();
+            if(!this.puShield){
+                this.shieldOpacity -= gameTime.deltaTime/300;
+            }
+        }
     };
 
     this.getDamage = function (dmg) {
-        if(!dev){
+        if(!this.puShield){
             // update hp and hpBar
             if(!this.damageEffect){
                 this.hp -= dmg;
-                
-            } else {
-                this.hp -= Math.floor(dmg/2);
+            }
+            if(dev){
+                this.hp = 100;
             }
             this.hp = Math.max(0, this.hp);
-            //console.log(this.hp, dmg);
             gameController.updateHpBar(this.hp);
-
             if(this.hp === 0){
                 gameController.loseGame();
             }
+            // start damage effect
+            this.damageEffect = true;
+            this.pUBetterShot(false);
+            this.pUDoubleShot(false);
+        } else {
+            this.PUShield(false);
         }
     }
 
