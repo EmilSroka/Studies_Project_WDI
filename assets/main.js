@@ -52,7 +52,7 @@ let shot1 = function(){
     if(this.shotCooldownTimer === 0){
         if(Math.abs(this.x - player.x) < 40) {
             if(Math.random() < this.probability){
-                enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
             }
             this.shotCooldownTimer = 1;
         }
@@ -71,7 +71,7 @@ let shot2 = function(){
             this.shotCooldownTimer += gameTime.deltaTime;
         }
     } else {
-        enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+        enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
         this.shotCooldownTimer = 0;
     }
 }
@@ -80,8 +80,8 @@ let shot3 = function(){
     if(this.shotCooldownTimer === 0){
         if(Math.abs(this.x - player.x) < 40) {
             if(Math.random() < this.probability){
-                enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
-                enemyController.addEnemyShot(this.x + 3*this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x - this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
             }
             this.shotCooldownTimer = 1;
         }
@@ -179,23 +179,28 @@ const gameTime = {
 const keys = {}
 
 // Borrowing functions
-let drawFunction = function(opacity) {
+let drawFunction = function(opacity, angle) {
     c.save();
-    if(typeof(opacity) !== "undefined") {
-        c.globalAlpha = opacity;
-    }
     let x = gameController.startPoint + this.x * gameController.unit;
     let y = this.y * gameController.unit;
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
-    c.drawImage(this.img, x, y, width, height);
-    c.restore();
+    c.translate(x,y);
+    if(typeof(opacity) !== "undefined") {
+        c.globalAlpha = opacity;
+    }
+    if(typeof(angle) !== "undefined") {
+        c.rotate(angle*Math.PI/180);
+    }
+    c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
     if(dev){
+        // draw hitbox
         c.beginPath();
-        c.arc(x + width/2, y + height/2, this.radius * gameController.unit, 0, 2 * Math.PI);
+        c.arc(0, 0, this.radius * gameController.unit, 0, 2 * Math.PI);
         c.strokeStyle = "#ffffff";
         c.stroke();
     }
+    c.restore();
 };
 
 // Objects
@@ -277,8 +282,8 @@ function Player(x, y, img) {
     this.width = 120;
     this.height = 80;
     this.radius = 40;
-    this.x = x-this.width/2;
-    this.y = y-this.height-10;
+    this.x = x;
+    this.y = y - this.height/2 - 10;
     this.dx = 0;
     this.dxLimit = 20;
     this.inertness = false;
@@ -321,7 +326,7 @@ function Player(x, y, img) {
         // shot (with cooldown)
         if(this.shotCooldownTimer === 0){
             if(keys[32] || keys[38] || keys[87]) {
-                enemyController.addPlayerShot(this.x + this.width/2, this.y, -20, 20, ShotType.player0);
+                enemyController.addPlayerShot(this.x, this.y - this.height/4, -20, 20, ShotType.player0);
                 this.shotCooldownTimer = 1;
             }
         } else {
@@ -457,7 +462,7 @@ function EnemyController() {
     this.collision = function() {
         // meteors and player
         for(let i=0;i<arrayOfMeteors.length;i++){
-            let distancePlayerMeteor = distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
+            let distancePlayerMeteor = distance(player.x, player.y, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
             if( distancePlayerMeteor < player.radius + arrayOfMeteors[i].radius){
                 if(!arrayOfMeteors[i].hitPlayer){
                     player.getDamage(arrayOfMeteors[i].dmg);
@@ -469,7 +474,7 @@ function EnemyController() {
         }
         // enemies and player
         for(let i=0;i<arrayOfEnemies.length;i++){
-            let distancePlayerEnemy = distance(player.x + player.width/2, player.y + player.height/2, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+            let distancePlayerEnemy = distance(player.x, player.y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
             if( distancePlayerEnemy < player.radius + arrayOfEnemies[i].radius){
                 player.getDamage(100);
                 arrayOfEnemies[i].getDamage(arrayOfEnemies[i].hp);
@@ -479,7 +484,7 @@ function EnemyController() {
         // shots and enemies
         for(let i=0;i<arrayOfEnemies.length;i++){
             for(let j=0;j<arrayOfPlayerShots.length;j++){
-                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
                 if(distanceShotEnemy < arrayOfEnemies[i].radius){
                     this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
                     arrayOfEnemies[i].getDamage(arrayOfPlayerShots[j].dmg);
@@ -489,7 +494,7 @@ function EnemyController() {
         }
         // shots and player
         for(let i=0;i<arrayOfEnemiesShots.length;i++){
-            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x + player.width/2, player.y + player.height/2);
+            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x, player.y);
             if(distanceShotEnemy < player.radius){
                 
                 this.addParticle(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, 1);
@@ -684,8 +689,8 @@ function Shot(x, y, dy, dmg, type) {
     // Position and movment
     this.width = 10;
     this.height = 30;
-    this.x = x - this.width/2;
-    this.y = y + this.height;
+    this.x = x;
+    this.y = y;
     this.dy = dy;
     //
     this.type = type;
