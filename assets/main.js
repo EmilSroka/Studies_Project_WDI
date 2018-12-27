@@ -8,7 +8,7 @@ canvas.height = innerHeight;
 
 // enumerators
 const State = {game: 1, menu: 2}
-const MeteorType = {brown: 1, grey: 2}
+const MeteorType = {brown: 0, grey: 1, brownSmall: 2, graySmall: 3}
 const EnemyType = {simple: 0, fast: 1, tank: 2, simpleUpgraded: 3, fastUpgraded: 4, simpleDouble: 5, ufo: 6}
 const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3}
 
@@ -117,6 +117,13 @@ arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, c
 arrayOfEnemyData.push([80, 20, 30, 500, 0.1, ShotType.enemy2, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy5.png", 100, 110, 50]);
 arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 40]);
 arrayOfEnemyData.push([200, 60, 3, 1000, 1, ShotType.enemy3, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy7.png", 140, 60, 40]);
+
+const arrayOfMeteorData = [];
+// width, height, radius, dmg, hp, img path, 
+arrayOfMeteorData.push([100, 100, 45, 50, 40, "./assets/img/meteorBrown.png"]);
+arrayOfMeteorData.push([100, 100, 45, 30, 80, "./assets/img/meteorGrey.png"]);
+arrayOfMeteorData.push([40, 40, 20, 5, 10, "./assets/img/meteorBrownSmall.png"]);
+arrayOfMeteorData.push([40, 40, 20, 10, 10, "./assets/img/meteorGreySmall.png"]);
 
 const arrayOfWaveData = [];
 // time, number (id) of enemy
@@ -626,9 +633,9 @@ function Enemy(x, y, type) {
 
 function Meteor(x, y, dx, dy, step, type) {
     // position and movment
-    this.width = 100;
-    this.height = 100;
-    this.radius = 30;
+    this.width = arrayOfMeteorData[type][0];
+    this.height = arrayOfMeteorData[type][1];
+    this.radius = arrayOfMeteorData[type][2];
     this.x = x - this.width/2;
     this.y = y - this.height/2;
     this.dx = dx;
@@ -636,30 +643,25 @@ function Meteor(x, y, dx, dy, step, type) {
     this.rotationAngle = 0;
     this.rotationStep = step;
     // game mechanic
-    this.dmg = type === MeteorType.grey ? 40 : 20;
-    this.img = new Image(); this.img.src = (type === MeteorType.grey ? meteorGrayImgPath : meteorBrownImgPath);
+    this.type = type;
+    this.hp = arrayOfMeteorData[type][4]
+    this.dmg = arrayOfMeteorData[type][3];
+    this.img = new Image(); this.img.src = arrayOfMeteorData[type][5];
     this.hitPlayer = false;
-
     
     this.update = function() {
+        
         this.x += this.dx;
         this.y += this.dy;
         this.rotationAngle += step;
         this.rotationAngle %= 360;
-        
-        this.draw();
+        this.draw(1, this.rotationAngle);
     }
 
-    this.draw = function() {
-        c.save();
-        let canvasX = gameController.startPoint + this.x*gameController.unit;
-        let canvasY = this.y*gameController.unit;
-        c.translate(canvasX,canvasY);
-        c.rotate(this.rotationAngle*Math.PI/180);
-        let width = this.width * gameController.unit;
-        let height = this.height * gameController.unit;
-        c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
-        c.restore();
+    this.draw = drawFunction;
+
+    this.getDamage = function (dmg) {
+        this.hp -= dmg;
     }
 }
 
