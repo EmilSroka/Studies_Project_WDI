@@ -8,7 +8,7 @@ canvas.height = innerHeight;
 
 // enumerators
 const State = {game: 1, menu: 2}
-const MeteorType = {brown: 1, grey: 2}
+const MeteorType = {brown: 0, grey: 1, brownSmall: 2, graySmall: 3}
 const EnemyType = {simple: 0, fast: 1, tank: 2, simpleUpgraded: 3, fastUpgraded: 4, simpleDouble: 5, ufo: 6}
 const ShotType = {player0: 0, enemy1: 1, enemy2: 2, enemy3: 3}
 
@@ -52,7 +52,7 @@ let shot1 = function(){
     if(this.shotCooldownTimer === 0){
         if(Math.abs(this.x - player.x) < 40) {
             if(Math.random() < this.probability){
-                enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
             }
             this.shotCooldownTimer = 1;
         }
@@ -71,7 +71,7 @@ let shot2 = function(){
             this.shotCooldownTimer += gameTime.deltaTime;
         }
     } else {
-        enemyController.addEnemyShot(this.x + this.width/2, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+        enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
         this.shotCooldownTimer = 0;
     }
 }
@@ -80,8 +80,8 @@ let shot3 = function(){
     if(this.shotCooldownTimer === 0){
         if(Math.abs(this.x - player.x) < 40) {
             if(Math.random() < this.probability){
-                enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
-                enemyController.addEnemyShot(this.x + 3*this.width/4, this.y + this.height, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x - this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
+                enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
             }
             this.shotCooldownTimer = 1;
         }
@@ -117,6 +117,13 @@ arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, c
 arrayOfEnemyData.push([80, 20, 30, 500, 0.1, ShotType.enemy2, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy5.png", 100, 110, 50]);
 arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 40]);
 arrayOfEnemyData.push([200, 60, 3, 1000, 1, ShotType.enemy3, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy7.png", 140, 60, 40]);
+
+const arrayOfMeteorData = [];
+// width, height, radius, dmg, hp, img path, 
+arrayOfMeteorData.push([100, 100, 45, 50, 40, "./assets/img/meteorBrown.png"]);
+arrayOfMeteorData.push([100, 100, 45, 30, 80, "./assets/img/meteorGrey.png"]);
+arrayOfMeteorData.push([40, 40, 20, 5, 10, "./assets/img/meteorBrownSmall.png"]);
+arrayOfMeteorData.push([40, 40, 20, 10, 10, "./assets/img/meteorGreySmall.png"]);
 
 const arrayOfWaveData = [];
 // time, number (id) of enemy
@@ -179,23 +186,28 @@ const gameTime = {
 const keys = {}
 
 // Borrowing functions
-let drawFunction = function(opacity) {
+let drawFunction = function(opacity, angle) {
     c.save();
-    if(typeof(opacity) !== "undefined") {
-        c.globalAlpha = opacity;
-    }
     let x = gameController.startPoint + this.x * gameController.unit;
     let y = this.y * gameController.unit;
     let width = this.width * gameController.unit;
     let height = this.height * gameController.unit;
-    c.drawImage(this.img, x, y, width, height);
-    c.restore();
+    c.translate(x,y);
+    if(typeof(opacity) !== "undefined") {
+        c.globalAlpha = opacity;
+    }
+    if(typeof(angle) !== "undefined") {
+        c.rotate(angle*Math.PI/180);
+    }
+    c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
     if(dev){
+        // draw hitbox
         c.beginPath();
-        c.arc(x + width/2, y + height/2, this.radius * gameController.unit, 0, 2 * Math.PI);
+        c.arc(0, 0, this.radius * gameController.unit, 0, 2 * Math.PI);
         c.strokeStyle = "#ffffff";
         c.stroke();
     }
+    c.restore();
 };
 
 // Objects
@@ -277,8 +289,8 @@ function Player(x, y, img) {
     this.width = 120;
     this.height = 80;
     this.radius = 40;
-    this.x = x-this.width/2;
-    this.y = y-this.height-10;
+    this.x = x;
+    this.y = y - this.height/2 - 10;
     this.dx = 0;
     this.dxLimit = 20;
     this.inertness = false;
@@ -321,7 +333,7 @@ function Player(x, y, img) {
         // shot (with cooldown)
         if(this.shotCooldownTimer === 0){
             if(keys[32] || keys[38] || keys[87]) {
-                enemyController.addPlayerShot(this.x + this.width/2, this.y, -20, 20, ShotType.player0);
+                enemyController.addPlayerShot(this.x, this.y - this.height/4, -20, 20, ShotType.player0);
                 this.shotCooldownTimer = 1;
             }
         } else {
@@ -405,13 +417,31 @@ function EnemyController() {
         // meteors
         for(let i=0;i<arrayOfMeteors.length;i++){
             arrayOfMeteors[i].update(); 
+            // break when hp is lower then 0
+            if( arrayOfMeteors[i].hp < 0){
+                if(arrayOfMeteors[i].type < 2){
+                    let dx = arrayOfMeteors[i].dx;
+                    let dy = arrayOfMeteors[i].dy;
+                    let x = arrayOfMeteors[i].x;
+                    let y = arrayOfMeteors[i].y;
+                    let type = arrayOfMeteors[i].type + 2;
+                    let newMeteors = getRandomInt(0,2);
+                    for(let j=0; j<newMeteors; j++){
+                        this.spawnMiniMeteor(x + Math.random()*10 - 5, y + Math.random()*10 - 5, -1, -1, type);
+                    }
+                    this.spawnMiniMeteor(x, y, dx, dy, type);
+                }   
+                arrayOfMeteors.splice(i, 1);
+                continue;
+            }
             // delete when meteor get out of screen
             if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
                 if(!arrayOfMeteors[i].hitPlayer){
-                    gameController.addScore(5);
+                    gameController.addScore(1);
                 }
                 arrayOfMeteors.splice(i, 1);
             }
+            
         }
         // spawn new metheors 
         if(Math.random() < 0.001){
@@ -457,7 +487,7 @@ function EnemyController() {
     this.collision = function() {
         // meteors and player
         for(let i=0;i<arrayOfMeteors.length;i++){
-            let distancePlayerMeteor = distance(player.x + player.width/2, player.y + player.height/2, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
+            let distancePlayerMeteor = distance(player.x, player.y, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
             if( distancePlayerMeteor < player.radius + arrayOfMeteors[i].radius){
                 if(!arrayOfMeteors[i].hitPlayer){
                     player.getDamage(arrayOfMeteors[i].dmg);
@@ -469,7 +499,7 @@ function EnemyController() {
         }
         // enemies and player
         for(let i=0;i<arrayOfEnemies.length;i++){
-            let distancePlayerEnemy = distance(player.x + player.width/2, player.y + player.height/2, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+            let distancePlayerEnemy = distance(player.x, player.y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
             if( distancePlayerEnemy < player.radius + arrayOfEnemies[i].radius){
                 player.getDamage(100);
                 arrayOfEnemies[i].getDamage(arrayOfEnemies[i].hp);
@@ -479,7 +509,7 @@ function EnemyController() {
         // shots and enemies
         for(let i=0;i<arrayOfEnemies.length;i++){
             for(let j=0;j<arrayOfPlayerShots.length;j++){
-                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x + arrayOfEnemies[i].width/2, arrayOfEnemies[i].y + arrayOfEnemies[i].height/2);
+                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
                 if(distanceShotEnemy < arrayOfEnemies[i].radius){
                     this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
                     arrayOfEnemies[i].getDamage(arrayOfPlayerShots[j].dmg);
@@ -489,12 +519,23 @@ function EnemyController() {
         }
         // shots and player
         for(let i=0;i<arrayOfEnemiesShots.length;i++){
-            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x + player.width/2, player.y + player.height/2);
+            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x, player.y);
             if(distanceShotEnemy < player.radius){
                 
                 this.addParticle(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, 1);
                 player.getDamage(arrayOfEnemiesShots[i].dmg);
                 arrayOfEnemiesShots.splice(i, 1);
+            }
+        }
+        // shots and meteors
+        for(let i=0;i<arrayOfMeteors.length;i++){
+            for(let j=0;j<arrayOfPlayerShots.length;j++){
+                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
+                if(distanceShotEnemy < arrayOfMeteors[i].radius){
+                    this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
+                    arrayOfMeteors[i].getDamage(arrayOfPlayerShots[j].dmg);
+                    arrayOfPlayerShots.splice(j, 1);
+                }
             }
         }
     }
@@ -515,17 +556,28 @@ function EnemyController() {
 
     this.spawnRandomMeteor = function() {
         let x, dx;
-        let y = -50;
-        let dy = getRandomBool() ? 1 : 2;
-        let step = getRandomInt(1,3);
-        let type = (gameTime.time > 300000 ? MeteorType.grey : MeteorType.brown);
         if(getRandomBool()){
             x = 50;
-            dx = getRandomBool() ? 1 : 0.5;
+            dx =  Math.random()*1.5;
         } else {
             x = 1550;
-            dx = getRandomBool() ? -1 : -0.5;
+            dx = -Math.random()*1.5;
         }
+        let y = -50;
+        let dy = Math.ceil(Math.random()*2) + 1;
+        let step = getRandomInt(1,3);
+        let type = getRandomInt(0,1);
+        
+        arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+    }
+
+    this.spawnMiniMeteor = function(x, y, dx, dy, type) {
+        if(dx === -1 && dy === -1){
+            dx = Math.random()*3 - 1.5;
+            dy = Math.ceil(Math.random()*2) + 1;
+        }
+        let step = getRandomInt(2,4);
+        
         arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
     }
 
@@ -621,9 +673,9 @@ function Enemy(x, y, type) {
 
 function Meteor(x, y, dx, dy, step, type) {
     // position and movment
-    this.width = 100;
-    this.height = 100;
-    this.radius = 30;
+    this.width = arrayOfMeteorData[type][0];
+    this.height = arrayOfMeteorData[type][1];
+    this.radius = arrayOfMeteorData[type][2];
     this.x = x - this.width/2;
     this.y = y - this.height/2;
     this.dx = dx;
@@ -631,30 +683,25 @@ function Meteor(x, y, dx, dy, step, type) {
     this.rotationAngle = 0;
     this.rotationStep = step;
     // game mechanic
-    this.dmg = type === MeteorType.grey ? 40 : 20;
-    this.img = new Image(); this.img.src = (type === MeteorType.grey ? meteorGrayImgPath : meteorBrownImgPath);
+    this.type = type;
+    this.hp = arrayOfMeteorData[type][4]
+    this.dmg = arrayOfMeteorData[type][3];
+    this.img = new Image(); this.img.src = arrayOfMeteorData[type][5];
     this.hitPlayer = false;
-
     
     this.update = function() {
+        
         this.x += this.dx;
         this.y += this.dy;
         this.rotationAngle += step;
         this.rotationAngle %= 360;
-        
-        this.draw();
+        this.draw(1, this.rotationAngle);
     }
 
-    this.draw = function() {
-        c.save();
-        let canvasX = gameController.startPoint + this.x*gameController.unit;
-        let canvasY = this.y*gameController.unit;
-        c.translate(canvasX,canvasY);
-        c.rotate(this.rotationAngle*Math.PI/180);
-        let width = this.width * gameController.unit;
-        let height = this.height * gameController.unit;
-        c.drawImage(this.img, -(1/2)*width, -(1/2)*height, width, height);
-        c.restore();
+    this.draw = drawFunction;
+
+    this.getDamage = function (dmg) {
+        this.hp -= dmg;
     }
 }
 
@@ -684,8 +731,8 @@ function Shot(x, y, dy, dmg, type) {
     // Position and movment
     this.width = 10;
     this.height = 30;
-    this.x = x - this.width/2;
-    this.y = y + this.height;
+    this.x = x;
+    this.y = y;
     this.dy = dy;
     //
     this.type = type;
