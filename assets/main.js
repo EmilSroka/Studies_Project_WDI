@@ -296,7 +296,7 @@ function Player(x, y, img) {
     // movement and position (game unit)
     this.width = 120;
     this.height = 80;
-    this.radius = 40;
+    this.radius = 45;
     this.x = x;
     this.y = y - this.height/2 - 10;
     this.dx = 0;
@@ -561,8 +561,6 @@ function EnemyController() {
                 if(!arrayOfMeteors[i].hitPlayer){
                     player.getDamage(arrayOfMeteors[i].dmg);
                     arrayOfMeteors[i].hitPlayer = true;
-                    //console.log(player.x, player.y, player.x + player.width/2, player.y + player.height/2);
-                    //console.log(arrayOfMeteors[i].x, arrayOfMeteors[i].y, arrayOfMeteors[i].x + arrayOfMeteors[i].width/2, arrayOfMeteors[i].y + arrayOfMeteors[i].height/2);
                 }
             }
         }
@@ -613,9 +611,7 @@ function EnemyController() {
         let randomWave;
         do {
             randomWave = getRandomInt(0, arrayOfWaveData.length-1);
-            //console.log(arrayOfWaveData[randomWave][0], gameTime.time)
         } while(arrayOfWaveData[randomWave][0] > gameTime.time && (arrayOfWaveData[randomWave][1] < gameTime.time || arrayOfWaveData[randomWave][1] !== -1));
-        //console.log(randomWave);
         this.currentWave = arrayOfWaveData[randomWave].slice();
         this.currentWave.shift();
         this.currentWave.shift();
@@ -807,7 +803,7 @@ function Shot(x, y, dy, dmg, type) {
     this.type = type;
     this.img = new Image(); this.img.src = arrayOfShotsImgPath[type];
     this.dmg = dmg;
-    //console.log(this.type, this.img);
+    
     this.update = function () {
         this.y += this.dy;
         this.draw();
@@ -944,7 +940,9 @@ function animate(time) {
     c.clearRect(0, 0, canvas.width, canvas.height);
     
     background.draw();
-    //c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    if(dev){
+        c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    }
     if(gameController.state === State.game){
         // calc time 
         gameTime.deltaTime = Math.min(32 ,time - gameTime.lastTime);
