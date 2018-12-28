@@ -1,4 +1,5 @@
 let dev = false;
+let isSound = true;
 
 const canvas = document.querySelector(".o-canvas");
 const c = canvas.getContext("2d");
@@ -54,6 +55,10 @@ let shot1 = function(){
         if(Math.abs(this.x - player.x) < 40) {
             if(Math.random() < this.probability){
                 enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
+                if(isSound){
+                    laser2.load();
+                    laser2.play();
+                }
             }
             this.shotCooldownTimer = 1;
         }
@@ -73,6 +78,10 @@ let shot2 = function(){
         }
     } else {
         enemyController.addEnemyShot(this.x, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
+        if(isSound){
+            laser2.load();
+            laser2.play();
+        }
         this.shotCooldownTimer = 0;
     }
 }
@@ -83,6 +92,10 @@ let shot3 = function(){
             if(Math.random() < this.probability){
                 enemyController.addEnemyShot(this.x - this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
                 enemyController.addEnemyShot(this.x + this.width/4, this.y + this.height/4, this.shotSpeed, this.dmg, this.shotType);
+                if(isSound){
+                    laser2.load();
+                    laser2.play();
+                }
             }
             this.shotCooldownTimer = 1;
         }
@@ -94,6 +107,13 @@ let shot3 = function(){
         }
     }
 }
+
+// Sounds
+const laser1 = new Audio("./assets/sounds/laser1.mp3");
+const laser2 = new Audio("./assets/sounds/laser2.mp3");
+const lose = new Audio("./assets/sounds/lose.mp3");
+const powerUp = new Audio("./assets/sounds/powerUp.mp3");
+const shieldDown = new Audio("./assets/sounds/shieldDown.mp3");
 
 // Graphics
 const arrayOfShotsImgPath = [];
@@ -360,6 +380,10 @@ function Player(x, y, img) {
                     enemyController.addPlayerShot(this.x, this.y - this.height/4, -this.shotSpeed, this.shotDmg, this.shotType);
                 }
                 this.shotCooldownTimer = 1;
+                if(isSound){
+                    laser1.load();
+                    laser1.play();
+                }
             }
         } else {
             if(this.shotCooldownTimer > this.shotCooldown){
@@ -405,6 +429,10 @@ function Player(x, y, img) {
             this.hp = Math.max(0, this.hp);
             gameController.updateHpBar(this.hp);
             if(this.hp === 0){
+                if(isSound){
+                    lose.load();
+                    lose.play();
+                }
                 gameController.loseGame();
             }
             // start damage effect
@@ -413,6 +441,10 @@ function Player(x, y, img) {
             this.pUDoubleShot(false);
         } else {
             this.pUShield(false);
+            if(isSound){
+                shieldDown.load();
+                shieldDown.play();
+            }
         }
     }
 
@@ -624,6 +656,10 @@ function EnemyController() {
                     case PowerUpType.double:
                         player.pUDoubleShot(true);
                         break;
+                }
+                if(isSound){
+                    powerUp.load();
+                    powerUp.play();
                 }
                 this.arrayOfPowerUps.splice(i, 1);
             }
