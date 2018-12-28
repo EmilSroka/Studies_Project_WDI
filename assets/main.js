@@ -95,17 +95,13 @@ let shot3 = function(){
     }
 }
 
-
 // Graphics
-let meteorBrownImgPath = "./assets/img/meteorBrown.png";
-let meteorGrayImgPath = "./assets/img/meteorGrey.png";
-
 const arrayOfShotsImgPath = [];
-const arrayOfParticle = [];
+const arrayOfParticleImgPath = [];
 const arrayOfShieldImgPath = [];
 const arrayOfPowerUpImgPath = [];
-arrayOfParticle.push(["./assets/img/laserBlueP1.png", "./assets/img/laserBlueP2.png"]);
-arrayOfParticle.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.png"]);
+arrayOfParticleImgPath.push(["./assets/img/laserBlueP1.png", "./assets/img/laserBlueP2.png"]);
+arrayOfParticleImgPath.push(["./assets/img/laserRedP1.png", "./assets/img/laserRedP2.png"]);
 arrayOfShotsImgPath.push("./assets/img/laserBlue.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed.png");
 arrayOfShotsImgPath.push("./assets/img/laserRed2.png");
@@ -118,7 +114,7 @@ arrayOfPowerUpImgPath.push("./assets/img/puDouble.png");
 
 const arrayOfEnemyData = [];
 // hp, dmg, speed, cooldown, prob, shottype, velX function, velY function, shot function, img path, width, height, radius;
-arrayOfEnemyData.push([60, 10, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png", 120, 85, 40]);
+arrayOfEnemyData.push([60, 10, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png", 120, 85, 50]);
 arrayOfEnemyData.push([40, 10, 20, 300, 0.1, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png", 100, 110, 50]);
 arrayOfEnemyData.push([200, 40, 30, 1500, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png", 140, 140, 70]);
 arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy4.png", 120, 85, 40]);
@@ -340,10 +336,10 @@ function Player(x, y, img) {
             this.inertnessTimer = 0;
         }
         // player get inertness when hit map border
-        if(this.x < 0){
+        if(this.x - this.width/2 < 0){
             this.dx = 2 * Math.abs(this.dx); 
             this.inertness = true;
-        } else if (this.x + this.width> 1600) {
+        } else if (this.x + this.width/2> 1600) {
             this.dx = -2 * Math.abs(this.dx);
             this.inertness = true;
         }
@@ -409,7 +405,7 @@ function Player(x, y, img) {
             this.pUBetterShot(false);
             this.pUDoubleShot(false);
         } else {
-            this.PUShield(false);
+            this.pUShield(false);
         }
     }
 
@@ -480,19 +476,19 @@ function PowerUp(x, y, type) {
 }
 
 function EnemyController() {
-    const arrayOfMeteors = [];
-    const arrayOfEnemies = [];
-    const arrayOfPlayerShots = [];
-    const arrayOfEnemiesShots = [];
-    const arrayOfParticle = [];
-    const arrayOfPowerUps = [];
+    this.arrayOfMeteors = [];
+    this.arrayOfEnemies = [];
+    this.arrayOfPlayerShots = [];
+    this.arrayOfEnemiesShots = [];
+    this.arrayOfParticle = [];
+    this.arrayOfPowerUps = [];
     this.waveTimer = -1;
     this.enemySpawnTimer = -1;
     this.currentWave = 0;
 
     this.update = function() {
         // wave start/end
-        if(this.waveTimer < 0){
+        if(this.waveTimer < 0 || !this.arrayOfEnemies.length){
             this.waveStart();
             this.waveTimer = 30000;
         } else {
@@ -510,34 +506,32 @@ function EnemyController() {
         }
 
         // meteors
-        for(let i=0;i<arrayOfMeteors.length;i++){
-            arrayOfMeteors[i].update(); 
+        for(let i=0;i<this.arrayOfMeteors.length;i++){
+            this.arrayOfMeteors[i].update(); 
             // break when hp is lower then 0
-            if( arrayOfMeteors[i].hp < 0){
-                if(arrayOfMeteors[i].type < 2){
-                    let dx = arrayOfMeteors[i].dx;
-                    let dy = arrayOfMeteors[i].dy;
-                    let x = arrayOfMeteors[i].x;
-                    let y = arrayOfMeteors[i].y;
-                    let type = arrayOfMeteors[i].type + 2;
+            if( this.arrayOfMeteors[i].hp < 0){
+                if(this.arrayOfMeteors[i].type < 2){
+                    let dx = this.arrayOfMeteors[i].dx;
+                    let dy = this.arrayOfMeteors[i].dy;
+                    let x = this.arrayOfMeteors[i].x;
+                    let y = this.arrayOfMeteors[i].y;
+                    let type = this.arrayOfMeteors[i].type + 2;
                     let newMeteors = getRandomInt(0,2);
                     for(let j=0; j<newMeteors; j++){
                         this.spawnMiniMeteor(x + Math.random()*10 - 5, y + Math.random()*10 - 5, -1, -1, type);
                     }
                     this.spawnMiniMeteor(x, y, dx, dy, type);
-                    if(Math.random() < 0.3){
-                        this.spawnPowerUp(x, y, getRandomInt(0, 3));
-                    }
+                    this.spawnPowerUp(x, y, getRandomInt(0, 3));
                 }   
-                arrayOfMeteors.splice(i, 1);
+                this.arrayOfMeteors.splice(i, 1);
                 continue;
             }
             // delete when meteor get out of screen
-            if( (arrayOfMeteors[i].y - arrayOfMeteors[i].width) * gameController.unit > innerHeight){
-                if(!arrayOfMeteors[i].hitPlayer){
+            if( (this.arrayOfMeteors[i].y - this.arrayOfMeteors[i].width) * gameController.unit > innerHeight){
+                if(!this.arrayOfMeteors[i].hitPlayer){
                     gameController.addScore(1);
                 }
-                arrayOfMeteors.splice(i, 1);
+                this.arrayOfMeteors.splice(i, 1);
             }
             
         }
@@ -547,92 +541,70 @@ function EnemyController() {
         }
 
         // enemies
-        for(let i=0;i<arrayOfEnemies.length;i++){
-            arrayOfEnemies[i].update();
+        for(let i=0;i<this.arrayOfEnemies.length;i++){
+            this.arrayOfEnemies[i].update();
             // delet when enemies die
-            if(arrayOfEnemies[i].isDeadTimer < 0){
-                arrayOfEnemies.splice(i, 1);
+            if(this.arrayOfEnemies[i].isDeadTimer < 0){
+                this.arrayOfEnemies.splice(i, 1);
                 gameController.addScore(10);
             }
         }
 
         // power ups
-        for(let i=0;i<arrayOfPowerUps.length;i++){
-            arrayOfPowerUps[i].update();
+        for(let i=0;i<this.arrayOfPowerUps.length;i++){
+            this.arrayOfPowerUps[i].update();
         }
 
         // shots
-        for(let i=0;i<arrayOfPlayerShots.length;i++){
-            arrayOfPlayerShots[i].update();
+        for(let i=0;i<this.arrayOfPlayerShots.length;i++){
+            this.arrayOfPlayerShots[i].update();
             // delete when shot get out of screen
-            if( (arrayOfPlayerShots[i].y + arrayOfPlayerShots[i].height) * gameController.unit < -10){
-                arrayOfPlayerShots.splice(i, 1);
+            if( (this.arrayOfPlayerShots[i].y + this.arrayOfPlayerShots[i].height) * gameController.unit < -10){
+                this.arrayOfPlayerShots.splice(i, 1);
             }
         }
-        for(let i=0;i<arrayOfEnemiesShots.length;i++){
-            arrayOfEnemiesShots[i].update();
+        for(let i=0;i<this.arrayOfEnemiesShots.length;i++){
+            this.arrayOfEnemiesShots[i].update();
             // delete when shot get out of screen
-            if(arrayOfEnemiesShots[i].y * gameController.unit > innerHeight + 10){
-                arrayOfEnemiesShots.splice(i, 1);
+            if(this.arrayOfEnemiesShots[i].y * gameController.unit > innerHeight + 10){
+                this.arrayOfEnemiesShots.splice(i, 1);
             }
         }
 
         // particle
-        for(let i=0;i<arrayOfParticle.length;i++){
-            arrayOfParticle[i].update();
-            // delete when shot get out of screen
-            if(arrayOfParticle[i].counter === 2){
-                arrayOfParticle.splice(i, 1);
+        for(let i=0;i<this.arrayOfParticle.length;i++){
+            this.arrayOfParticle[i].update();
+            // delete when animation end
+            if(this.arrayOfParticle[i].counter === 2){
+                this.arrayOfParticle.splice(i, 1);
             }
         }
     }
 
     this.collision = function() {
         // meteors and player
-        for(let i=0;i<arrayOfMeteors.length;i++){
-            let distancePlayerMeteor = distance(player.x, player.y, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
-            if( distancePlayerMeteor < player.radius + arrayOfMeteors[i].radius){
-                if(!arrayOfMeteors[i].hitPlayer){
-                    player.getDamage(arrayOfMeteors[i].dmg);
-                    arrayOfMeteors[i].hitPlayer = true;
+        for(let i=0;i<this.arrayOfMeteors.length;i++){
+            let distanceV = distance(player.x, player.y, this.arrayOfMeteors[i].x, this.arrayOfMeteors[i].y);
+            if( distanceV < player.radius + this.arrayOfMeteors[i].radius){
+                if(!this.arrayOfMeteors[i].hitPlayer){
+                    player.getDamage(this.arrayOfMeteors[i].dmg);
+                    this.arrayOfMeteors[i].hitPlayer = true;
                 }
             }
         }
         // enemies and player
-        for(let i=0;i<arrayOfEnemies.length;i++){
-            let distancePlayerEnemy = distance(player.x, player.y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
-            if( distancePlayerEnemy < player.radius + arrayOfEnemies[i].radius){
+        for(let i=0;i<this.arrayOfEnemies.length;i++){
+            let distanceV = distance(player.x, player.y, this.arrayOfEnemies[i].x, this.arrayOfEnemies[i].y);
+            if( distanceV < player.radius + this.arrayOfEnemies[i].radius){
                 player.getDamage(100);
-                arrayOfEnemies[i].getDamage(arrayOfEnemies[i].hp);
-                // end game !!!
+                this.arrayOfEnemies[i].getDamage(this.arrayOfEnemies[i].hp);
             }
         }
-        // shots and enemies
-        for(let i=0;i<arrayOfEnemies.length;i++){
-            for(let j=0;j<arrayOfPlayerShots.length;j++){
-                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfEnemies[i].x, arrayOfEnemies[i].y);
-                if(distanceShotEnemy < arrayOfEnemies[i].radius){
-                    this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
-                    arrayOfEnemies[i].getDamage(arrayOfPlayerShots[j].dmg);
-                    arrayOfPlayerShots.splice(j, 1);
-                }
-            }
-        }
-        // shots and player
-        for(let i=0;i<arrayOfEnemiesShots.length;i++){
-            let distanceShotEnemy = distance(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, player.x, player.y);
-            if(distanceShotEnemy < player.radius){
-                
-                this.addParticle(arrayOfEnemiesShots[i].x+arrayOfEnemiesShots[i].width/2, arrayOfEnemiesShots[i].y + arrayOfEnemiesShots[i].height, 1);
-                player.getDamage(arrayOfEnemiesShots[i].dmg);
-                arrayOfEnemiesShots.splice(i, 1);
-            }
-        }
-        // powerup and player
-        for(let i=0;i<arrayOfPowerUps.length;i++){
-            let distanceShotEnemy = distance(arrayOfPowerUps[i].x, arrayOfPowerUps[i].y, player.x, player.y);
-            if(distanceShotEnemy < player.radius + arrayOfPowerUps[i].radius){
-                switch(arrayOfPowerUps[i].type){
+        // power ups and player
+        for(let i=0;i<this.arrayOfPowerUps.length;i++){
+            let distanceV = distance(this.arrayOfPowerUps[i].x, this.arrayOfPowerUps[i].y, player.x, player.y);
+            if(distanceV < player.radius + this.arrayOfPowerUps[i].radius){
+                switch(this.arrayOfPowerUps[i].type){
                     case PowerUpType.hp:
                         player.addHP(20);
                         break;
@@ -646,17 +618,38 @@ function EnemyController() {
                         player.pUDoubleShot(true);
                         break;
                 }
-                arrayOfPowerUps.splice(i, 1);
+                this.arrayOfPowerUps.splice(i, 1);
+            }
+        }
+        // shots and player
+        for(let i=0;i<this.arrayOfEnemiesShots.length;i++){
+            let distanceV = distance(this.arrayOfEnemiesShots[i].x+this.arrayOfEnemiesShots[i].width/2, this.arrayOfEnemiesShots[i].y + this.arrayOfEnemiesShots[i].height, player.x, player.y);
+            if(distanceV < player.radius){
+                
+                this.addParticle(this.arrayOfEnemiesShots[i].x+this.arrayOfEnemiesShots[i].width/2, this.arrayOfEnemiesShots[i].y + this.arrayOfEnemiesShots[i].height, 1);
+                player.getDamage(this.arrayOfEnemiesShots[i].dmg);
+                this.arrayOfEnemiesShots.splice(i, 1);
+            }
+        }
+        // shots and enemies
+        for(let i=0;i<this.arrayOfEnemies.length;i++){
+            for(let j=0;j<this.arrayOfPlayerShots.length;j++){
+                let distanceV = distance(this.arrayOfPlayerShots[j].x+this.arrayOfPlayerShots[j].width/2, this.arrayOfPlayerShots[j].y, this.arrayOfEnemies[i].x, this.arrayOfEnemies[i].y);
+                if(distanceV < this.arrayOfEnemies[i].radius){
+                    this.addParticle(this.arrayOfPlayerShots[j].x+this.arrayOfPlayerShots[j].width/2, this.arrayOfPlayerShots[j].y, 0);
+                    this.arrayOfEnemies[i].getDamage(this.arrayOfPlayerShots[j].dmg);
+                    this.arrayOfPlayerShots.splice(j, 1);
+                }
             }
         }
         // shots and meteors
-        for(let i=0;i<arrayOfMeteors.length;i++){
-            for(let j=0;j<arrayOfPlayerShots.length;j++){
-                let distanceShotEnemy = distance(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, arrayOfMeteors[i].x, arrayOfMeteors[i].y);
-                if(distanceShotEnemy < arrayOfMeteors[i].radius){
-                    this.addParticle(arrayOfPlayerShots[j].x+arrayOfPlayerShots[j].width/2, arrayOfPlayerShots[j].y, 0);
-                    arrayOfMeteors[i].getDamage(arrayOfPlayerShots[j].dmg);
-                    arrayOfPlayerShots.splice(j, 1);
+        for(let i=0;i<this.arrayOfMeteors.length;i++){
+            for(let j=0;j<this.arrayOfPlayerShots.length;j++){
+                let distanceV = distance(this.arrayOfPlayerShots[j].x+this.arrayOfPlayerShots[j].width/2, this.arrayOfPlayerShots[j].y, this.arrayOfMeteors[i].x, this.arrayOfMeteors[i].y);
+                if(distanceV < this.arrayOfMeteors[i].radius){
+                    this.addParticle(this.arrayOfPlayerShots[j].x+this.arrayOfPlayerShots[j].width/2, this.arrayOfPlayerShots[j].y, 0);
+                    this.arrayOfMeteors[i].getDamage(this.arrayOfPlayerShots[j].dmg);
+                    this.arrayOfPlayerShots.splice(j, 1);
                 }
             }
         }
@@ -672,23 +665,21 @@ function EnemyController() {
         this.currentWave.shift();
     }
 
-    // dev
-
     this.spawnRandomMeteor = function() {
         let x, dx;
         if(getRandomBool()){
             x = 50;
-            dx =  Math.random()*1.5;
+            dx =  Math.random() + 0.5;
         } else {
             x = 1550;
-            dx = -Math.random()*1.5;
+            dx = -(Math.random() + 0.5);
         }
         let y = -50;
         let dy = Math.ceil(Math.random()*2) + 1;
         let step = getRandomInt(1,3);
-        let type = getRandomInt(0,1);
+        let type = gameTime.time > 180000 ? 1 : 0; // brown when time is lower than 3 min, else grey
         
-        arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+        this.arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
     }
 
     this.spawnMiniMeteor = function(x, y, dx, dy, type) {
@@ -698,27 +689,27 @@ function EnemyController() {
         }
         let step = getRandomInt(2,4);
         
-        arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
+        this.arrayOfMeteors.push(new Meteor(x, y, dx, dy, step, type));
     }
 
     this.spawnEnemy = function(enemyType) {
-        arrayOfEnemies.push(new Enemy(15,-220,enemyType));
+        this.arrayOfEnemies.push(new Enemy(70,-80,enemyType));
     }
 
     this.addPlayerShot = function(x, y, dy, dmg, type) {
-        arrayOfPlayerShots.push(new Shot(x, y, dy, dmg, type));
+        this.arrayOfPlayerShots.push(new Shot(x, y, dy, dmg, type));
     }
 
     this.addEnemyShot = function(x, y, dy, dmg, type) {
-        arrayOfEnemiesShots.push(new Shot(x, y, dy, dmg, type));
+        this.arrayOfEnemiesShots.push(new Shot(x, y, dy, dmg, type));
     }
 
     this.addParticle = function(x, y, type) {
-        arrayOfParticle.push(new Particle(x, y, type));
+        this.arrayOfParticle.push(new Particle(x, y, type));
     }
 
     this.spawnPowerUp = function(x, y, type) {
-        arrayOfPowerUps.push(new PowerUp(x, y, type));
+        this.arrayOfPowerUps.push(new PowerUp(x, y, type));
     }
 }
 
@@ -837,12 +828,12 @@ function Particle(x, y, type) {
     this.type = type;
     this.counter = 0;
     this.img = new Image();
-    this.img.src = arrayOfParticle[type][0];
+    this.img.src = arrayOfParticleImgPath[type][0];
 
     this.update = function() {
         let opacity = this.counter < 2 ? 1 : 0.5;
         if(this.counter === 1){
-            this.img.src = arrayOfParticle[type][1];
+            this.img.src = arrayOfParticleImgPath[type][1];
         }
         this.counter++;
         this.draw(opacity);
