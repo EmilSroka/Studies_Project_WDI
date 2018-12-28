@@ -232,6 +232,13 @@ function GameController() {
     this.scoreTimer = 0;
     // game objects 
 
+    this.reCalcUnit = function () {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+        this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900);
+        this.startPoint = (innerWidth - this.unit * 1600) / 2;
+    }
+
     this.startGame = function () {
         this.interface.classList.add("hide");
         this.hpBar.classList.remove("hide");
@@ -969,6 +976,11 @@ addEventListener('mousemove', function(event) {
     mouse.y = event.clientY;
 });
 
+addEventListener('resize', function() {
+    gameController.reCalcUnit();
+    background.generate();
+});
+
 gameController.startButton.addEventListener("click", function() {
     gameController.startGame();
 });
@@ -991,6 +1003,7 @@ function animate(time) {
     
     background.draw();
     if(dev){
+        // draw game board
         c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     }
     if(gameController.state === State.game){
@@ -998,9 +1011,10 @@ function animate(time) {
         gameTime.deltaTime = Math.min(32 ,time - gameTime.lastTime);
         gameTime.time += gameTime.deltaTime;
         
-        gameController.update();
-        enemyController.update();
+        // updates
         player.update();
+        enemyController.update();
+        gameController.update();
 
         // colisions
         enemyController.collision();
