@@ -140,6 +140,57 @@ body{
     font-size: 3rem;
     color: #36bbf5;
 }
+/* text input */
+:-ms-input-placeholder{
+    color: rgba(54,188,245,.5);
+}
+::-ms-input-placeholde{
+    color: rgba(54,188,245,.5);
+}
+
+::placeholder { 
+    color: rgba(54,188,245,.5);
+    opacity: 1;
+}
+
+.c-text-input{
+    padding: 1rem 2rem;
+    border-radius: .6rem;
+    border: .2rem solid #36bbf5;
+    background-color: transparent;
+    font-size: 2rem;
+    color: #36bbf5;
+    transition: all .5s ease;
+}
+
+.c-text-input:focus{
+    border: .2rem solid #25aae4;
+    outline: none;
+}
+
+.c-text-input:focus{
+    border: .2rem solid #25aae4;
+    background-color: #36bbf5;
+    outline: none;
+    color: #333;
+}
+/* */
+.c-result{
+    margin: 0;
+    margin-bottom: 3rem;
+    font-size: 3rem;
+    color: #36bbf5;
+}
+
+.c-result-list{
+    text-align: left;
+    margin: 0;
+}
+
+.c-result-list > li{
+    font-size: 2rem;
+    color: #36bbf5;
+}
 /************
  * util class
  ************/

@@ -17,8 +17,8 @@
         <h1 class="c-heading">Space invaders</h1>
         <div class="o-interface__buttons">
             <button class="c-button c-button--primary" id="start-button">Graj</button>
-            <button class="c-button">Opcja 1</button>
-            <button class="c-button">Opcja 2</button>
+            <button class="c-button" id="scores-button">Wyniki</button>
+            <button class="c-button" id="settings-button">opcje/info</button>
             <button class="c-button c-button--danger" id="exit-button">Wyjście</button>
         </div>
     </main>
@@ -26,9 +26,25 @@
         <span style="width: 100%;"></span>
     </div>
     <p class="c-score hide">Wynik: 0</p>
+    <div class="o-interface hide" id="bests-scores">
+        <button class="c-button" id="return-button">Wróć</button>
+        <h1 class="c-heading">Najlepsze wyniki</h1>
+    </div>
+    <div class="o-interface hide" id="options/more">
+        <button class="c-button" id="return-button2">Wróć</button>
+        <h1 class="c-heading">Opcje</h1>
+        <div class="o-interface__buttons">
+            <button class="c-button" id="sound">Wyłącz dźwięki</button>
+            <button class="c-button" id="background">Wyłącz tło</button>
+        </div>
+        <h1 class="c-heading">Info</h1>
+        <p>Tu będzie info (małym druczkiem)</p>
+    </div>
     <div class="o-interface hide" id="end-game">
         <h1 class="c-heading">Koniec gry</h1>
-        <button class="c-button c-button--primary" id="reload">Zagraj ponownie</button>
+        <p class="c-result" id="result">Twój wynik to: 11111</p>
+        <input type="text" placeholder="Podaj nick" class="c-text-input" id="nick">
+        <button class="c-button c-button--primary" id="reload">Wróć do menu</button>
     </div>
 </body>
 </html>

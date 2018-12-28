@@ -1,5 +1,7 @@
 let dev = false;
-let isSound = true;
+// if not exist set true, else read from local storage and convert (from string to boolean)
+let isSound = localStorage.getItem("isSound") == null ? true : (localStorage.getItem("isSound") === "true");
+let isBackground = localStorage.getItem("isBackground") == null ? true : (localStorage.getItem("isBackground") === "true");
 
 const canvas = document.querySelector(".o-canvas");
 const c = canvas.getContext("2d");
@@ -113,7 +115,7 @@ const laser1 = new Audio("./assets/sounds/laser1.mp3");
 const laser2 = new Audio("./assets/sounds/laser2.mp3");
 const lose = new Audio("./assets/sounds/lose.mp3");
 const powerUp = new Audio("./assets/sounds/powerUp.mp3");
-const shieldDown = new Audio("./assets/sounds/shieldDown.mp3");
+const damage = new Audio("./assets/sounds/shieldDown.mp3");
 
 // Graphics
 const arrayOfShotsImgPath = [];
@@ -239,18 +241,95 @@ function GameController() {
     this.state = State.menu;
     this.unit = ((innerWidth / 1600)*900 <= innerHeight) ? (innerWidth / 1600) : (innerHeight / 900); // calc game unit
     this.startPoint = (innerWidth - this.unit * 1600) / 2; // origin of the coordinate system 
-    // html elements
-    this.endBoard = document.getElementById("end-game");
-    this.reloadButton = document.getElementById("reload");
+    // menu
     this.interface = document.getElementById("menu");
     this.startButton = document.getElementById("start-button");
     this.exitButton = document.getElementById("exit-button");
+    // best scores screen
+    this.scoresButton = document.getElementById("scores-button");
+    this.scoresScreen = document.getElementById("bests-scores");
+    this.returnButton = document.getElementById("return-button");
+    this.firstTimeInScoresScreen = true;
+    // info/about
+    this.settingsButton = document.getElementById("settings-button");
+    this.settingsScreen = document.getElementById("options/more");
+    this.returnButton2 = document.getElementById("return-button2");
+    this.soundButton = document.getElementById("sound");
+    this.backgroundButton = document.getElementById("background");
+    // game
     this.hpBar = document.querySelector(".c-bar");
     this.hpBarProgress = this.hpBar.querySelector("span");
     this.score = 0;
     this.scoreP = document.querySelector(".c-score");
     this.scoreTimer = 0;
-    // game objects 
+    this.results = [];
+    // end screen 
+    this.endBoard = document.getElementById("end-game");
+    this.reloadButton = document.getElementById("reload");
+    this.textInput = document.getElementById("nick");
+    this.result = document.getElementById("result");
+
+    this.loadResults = function () {
+        for(let i=0; i<10; i++){
+            if(localStorage.getItem("score"+i) == null){
+                break;
+            } else {
+                this.results.push(JSON.parse(localStorage.getItem("score"+i)));
+            }
+        }
+    }
+
+    this.saveResults = function () {
+        for(let i=0; i<10; i++){
+            if(typeof(this.results[i]) === "undefined"){
+                break;
+            } else {
+                localStorage.setItem("score"+i, JSON.stringify(this.results[i]));
+            }
+        }
+    }
+
+    this.addResults = function (name, score, time) {
+        this.results.push(new Score(name, score, time));
+        this.results.sort(function(a, b) { 
+            return b.score - a.score;
+        });
+    }
+
+    this.showResults = function () {
+        this.interface.classList.add("hide");
+        this.scoresScreen.classList.remove("hide");
+        if(this.firstTimeInScoresScreen){
+            let toAdd = '<ol class="c-result-list">';
+            for(let i=0; i<this.results.length; i++){
+                toAdd += "<li>"+this.results[i].name+": "+this.results[i].score+"</li>";
+            }
+            toAdd += "</ol>";
+            this.scoresScreen.innerHTML += toAdd;
+            this.firstTimeInScoresScreen = false;
+            this.returnButton = document.getElementById("return-button");
+            gameController.returnButton.addEventListener("click", function() {
+                gameController.hideResults();
+            });
+        }
+    }
+
+    this.hideResults = function () {
+        this.interface.classList.remove("hide");
+        this.scoresScreen.classList.add("hide");
+    }
+
+    this.showSettings = function () {
+        this.interface.classList.add("hide");
+        this.settingsScreen.classList.remove("hide");
+        this.soundButton.innerText = isSound ? "Wyłącz dźwięk" : "Włącz dźwięk";
+        this.backgroundButton.innerText = isBackground ? "Wyłącz tło" : "Włącz tło";
+    }
+
+    this.hideSettings = function () {
+        this.interface.classList.remove("hide");
+        this.settingsScreen.classList.add("hide");
+    }
 
     this.reCalcUnit = function () {
         canvas.width = innerWidth;
@@ -264,7 +343,6 @@ function GameController() {
         this.hpBar.classList.remove("hide");
         this.scoreP.classList.remove("hide");
         this.state = State.game;
-        //gameTime = 0;
     }
 
     this.endGame = function () {
@@ -279,6 +357,7 @@ function GameController() {
         this.hpBar.classList.add("hide");
         this.scoreP.classList.add("hide");
         this.state = State.menu;
+        this.result.innerText = "Twój wynik to: "+this.score;
     }
 
     this.update = function () {
@@ -313,6 +392,12 @@ function GameController() {
         this.score += score;
         this.updateScoreP(this.score);
     }
+}
+
+function Score(name, score, time) {
+    this.name = name;
+    this.score = score;
+    this.time = time;
 }
 
 function Player(x, y, img) {
@@ -439,12 +524,12 @@ function Player(x, y, img) {
             this.damageEffect = true;
             this.pUBetterShot(false);
             this.pUDoubleShot(false);
+            if(isSound){
+                damage.load();
+                damage.play();
+            }
         } else {
             this.pUShield(false);
-            if(isSound){
-                shieldDown.load();
-                shieldDown.play();
-            }
         }
     }
 
@@ -1004,6 +1089,7 @@ const player = new Player(800,900,"./assets/img/playerShip.png");
 const enemyController = new EnemyController();
 function init() {
     background.generate();
+    gameController.loadResults();
 }
 
 // Event Listeners
@@ -1014,11 +1100,37 @@ addEventListener('mousemove', function(event) {
 
 addEventListener('resize', function() {
     gameController.reCalcUnit();
-    background.generate();
+    if(isBackground){
+        background.generate();
+    }
 });
 
 gameController.startButton.addEventListener("click", function() {
     gameController.startGame();
+});
+
+gameController.scoresButton.addEventListener("click", function(){
+    gameController.showResults();
+});
+
+gameController.settingsButton.addEventListener("click", function() {
+    gameController.showSettings();
+});
+
+gameController.soundButton.addEventListener("click", function() {
+    isSound = !isSound;
+    gameController.soundButton.innerText = isSound ? "Wyłącz dźwięk" : "Włącz dźwięk";
+    localStorage.setItem("isSound", isSound);
+});
+
+gameController.backgroundButton.addEventListener("click", function() {
+    isBackground = !isBackground;
+    gameController.backgroundButton.innerText = isBackground ? "Wyłącz tło" : "Włącz tło";
+    localStorage.setItem("isBackground", isBackground);
+});
+
+gameController.returnButton2.addEventListener("click", function() {
+    gameController.hideSettings();
 });
 
 gameController.exitButton.addEventListener("click", function() {
@@ -1026,8 +1138,13 @@ gameController.exitButton.addEventListener("click", function() {
 });
 
 gameController.reloadButton.addEventListener("click", function() {
+    let name = gameController.textInput.value;
+    gameController.addResults(name, gameController.score, gameTime.time);
+    gameController.saveResults();
     location.reload();
 });
+
+
 // Update key object
 window.onkeyup = function(e) { keys[e.keyCode] = false; };
 window.onkeydown = function(e) { keys[e.keyCode] = true; };
@@ -1037,7 +1154,9 @@ function animate(time) {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
     
-    background.draw();
+    if(isBackground){
+        background.draw();
+    }
     if(dev){
         // draw game board
         c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
