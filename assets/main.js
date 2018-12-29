@@ -19,24 +19,24 @@ const PowerUpType = {hp:0, shield:1, power:2, double:3}
 // velocity functions
 let calcVelocityX1 = function(timer) {
     timer /= 2000;
-    return 6.1*Math.sin(timer);
+    return (6.1*Math.sin(timer))*gameTime.deltaTime/16;
 }
 
 let calcVelocityY1 = function(timer) {
     timer /= 2000;
     timer += Math.PI/2;
-    return (Math.sin(timer) * Math.sin(timer))/2;
+    return ((Math.sin(timer) * Math.sin(timer))/2)*gameTime.deltaTime/16;
 }
 
 let calcVelocityX2 = function(timer) {
     timer /= 1000;
-    return 12.2*Math.sin(timer);
+    return (12.2*Math.sin(timer))*gameTime.deltaTime/16;
 }
 
 let calcVelocityY2 = function(timer) {
     timer /= 1000;
     timer += Math.PI/2;
-    return Math.sin(timer) * Math.sin(timer);
+    return (Math.sin(timer) * Math.sin(timer))*gameTime.deltaTime/16;
 }
 
 let calcVelocityX3 = function(timer) {
@@ -44,12 +44,12 @@ let calcVelocityX3 = function(timer) {
     timer += Math.PI/4;
     let tmp = Math.floor(timer / (Math.PI * 9));
     let sign = (tmp % 2 == 0 ? 1 : -1);
-    return sign * Math.sin(timer) * Math.sin(timer);
+    return (sign * Math.sin(timer) * Math.sin(timer))*gameTime.deltaTime/16;
 }
 
 let calcVelocityY3 = function(timer) {
     timer /= 2000;
-    return 2 * Math.sin(timer);
+    return (2 * Math.sin(timer))*gameTime.deltaTime/16;
 }
 // shots functions
 let shot1 = function(){
