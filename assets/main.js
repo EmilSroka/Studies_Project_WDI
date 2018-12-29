@@ -204,6 +204,7 @@ const mouse = {
 }
 
 const gameTime = {
+    fixedTime: 0,
     lastTime: 0,
     deltaTime: 0,
     time: 0
@@ -1161,10 +1162,11 @@ function animate(time) {
         // draw game board
         c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
     }
-    if(gameController.state === State.game){
+    if(gameController.state === State.game && gameTime.fixedTime > 14){
         // calc time 
-        gameTime.deltaTime = Math.min(32 ,time - gameTime.lastTime);
+        gameTime.deltaTime = Math.min(24 ,gameTime.fixedTime);
         gameTime.time += gameTime.deltaTime;
+        gameTime.fixedTime = 0;
         
         // updates
         player.update();
@@ -1174,6 +1176,7 @@ function animate(time) {
         // colisions
         enemyController.collision();
     }
+    gameTime.fixedTime += time - gameTime.lastTime;
     gameTime.lastTime = time;
 }
 
