@@ -198,6 +198,17 @@ function calcOpacity(timer) {
     return Math.min(1, opacity); // prevent opacity greater than 1 
 }
 
+function clearScreen() {
+    c.clearRect(0, 0, canvas.width, canvas.height);
+    if(isBackground){
+        background.draw();
+    }
+    if(dev){
+        // draw game board
+        c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
+    }
+}
+
 const mouse = {
     x: innerWidth / 2,
     y: innerHeight / 2
@@ -1153,16 +1164,12 @@ window.onkeydown = function(e) { keys[e.keyCode] = true; };
 // Animation Loop
 function animate(time) {
     requestAnimationFrame(animate);
-    c.clearRect(0, 0, canvas.width, canvas.height);
+    if(gameController.state === State.menu){
+        clearScreen();
+    }
     
-    if(isBackground){
-        background.draw();
-    }
-    if(dev){
-        // draw game board
-        c.fillRect(gameController.startPoint, 0, gameController.unit * 1600, gameController.unit * 900);
-    }
     if(gameController.state === State.game && gameTime.fixedTime > 14){
+        clearScreen();
         // calc time 
         gameTime.deltaTime = Math.min(24 ,gameTime.fixedTime);
         gameTime.time += gameTime.deltaTime;
