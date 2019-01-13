@@ -139,9 +139,9 @@ const arrayOfEnemyData = [];
 arrayOfEnemyData.push([60, 10, 20, 300, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy1.png", 120, 85, 50]);
 arrayOfEnemyData.push([40, 10, 20, 300, 0.1, ShotType.enemy1, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy2.png", 100, 110, 50]);
 arrayOfEnemyData.push([200, 40, 30, 1500, 1, ShotType.enemy2, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy3.png", 140, 140, 70]);
-arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy4.png", 120, 85, 40]);
+arrayOfEnemyData.push([120, 20, 30, 500, 0.2, ShotType.enemy2, calcVelocityX1, calcVelocityY1, shot1, "./assets/img/enemy4.png", 120, 85, 50]);
 arrayOfEnemyData.push([80, 20, 30, 500, 0.1, ShotType.enemy2, calcVelocityX2, calcVelocityY2, shot1, "./assets/img/enemy5.png", 100, 110, 50]);
-arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 40]);
+arrayOfEnemyData.push([80, 10, 20, 600, 0.2, ShotType.enemy1, calcVelocityX1, calcVelocityY1, shot3, "./assets/img/enemy6.png", 120, 85, 50]);
 arrayOfEnemyData.push([200, 60, 3, 1000, 1, ShotType.enemy3, calcVelocityX3, calcVelocityY3, shot2, "./assets/img/enemy7.png", 140, 60, 40]);
 
 const arrayOfMeteorData = [];
@@ -153,10 +153,12 @@ arrayOfMeteorData.push([40, 40, 20, 10, 10, "./assets/img/meteorGreySmall.png"])
 
 const arrayOfWaveData = [];
 // time, number (id) of enemy
-arrayOfWaveData.push([0, 119000, 0, 0, 0, 0, 0, 0]);
-arrayOfWaveData.push([0, 119000, 0, 1, 0, 1, 0]);
+arrayOfWaveData.push([0, 61000, 0, 0, 0, 0, 0, 0]);
+arrayOfWaveData.push([0, 61000, 0, 1, 0, 1, 0]);
 arrayOfWaveData.push([59000, 239000, 2, 0, 0, 0]);
 arrayOfWaveData.push([59000, 239000, 1, 1, 1, 1, 1]);
+arrayOfWaveData.push([59000, 239000, 3, 1, 1, 1]);
+arrayOfWaveData.push([59000, 239000, 4, 1, 1, 1]);
 arrayOfWaveData.push([119000, 290000, 3, 3, 3, 3, 3, 3]);
 arrayOfWaveData.push([119000, 290000, 0, 5, 3, 0, 5, 3]);
 arrayOfWaveData.push([119000, 290000, 2, 5, 5, 5, 5]);
@@ -461,10 +463,10 @@ function Player(x, y, img) {
         }
         // player get inertness when hit map border
         if(this.x - this.width/2 < 0){
-            this.dx = 2 * Math.abs(this.dx); 
+            this.dx = 1.5 * Math.abs(this.dx); 
             this.inertness = true;
         } else if (this.x + this.width/2> 1600) {
-            this.dx = -2 * Math.abs(this.dx);
+            this.dx = -1.5 * Math.abs(this.dx);
             this.inertness = true;
         }
         // shot (with cooldown)
@@ -647,6 +649,7 @@ function EnemyController() {
             // break when hp is lower then 0
             if( this.arrayOfMeteors[i].hp < 0){
                 if(this.arrayOfMeteors[i].type < 2){
+                    gameController.addScore(3);
                     let dx = this.arrayOfMeteors[i].dx;
                     let dy = this.arrayOfMeteors[i].dy;
                     let x = this.arrayOfMeteors[i].x;
@@ -682,7 +685,7 @@ function EnemyController() {
             // delet when enemies die
             if(this.arrayOfEnemies[i].isDeadTimer < 0){
                 this.arrayOfEnemies.splice(i, 1);
-                gameController.addScore(10);
+                gameController.addScore(5);
             }
         }
 
@@ -706,6 +709,8 @@ function EnemyController() {
                 this.arrayOfEnemiesShots.splice(i, 1);
             }
         }
+
+        player.update();
 
         // particle
         for(let i=0;i<this.arrayOfParticle.length;i++){
@@ -740,6 +745,7 @@ function EnemyController() {
         for(let i=0;i<this.arrayOfPowerUps.length;i++){
             let distanceV = distance(this.arrayOfPowerUps[i].x, this.arrayOfPowerUps[i].y, player.x, player.y);
             if(distanceV < player.radius + this.arrayOfPowerUps[i].radius){
+                gameController.addScore(2);
                 switch(this.arrayOfPowerUps[i].type){
                     case PowerUpType.hp:
                         player.addHP(20);
@@ -1176,7 +1182,6 @@ function animate(time) {
         gameTime.fixedTime = 0;
         
         // updates
-        player.update();
         enemyController.update();
         gameController.update();
 
