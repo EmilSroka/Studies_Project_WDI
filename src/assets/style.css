@@ -5,18 +5,13 @@
           #ffcc00 - "gold" #eebb00 - dark gold
 */
 
-@font-face {
-    font-family: "Lato";
-    src: url(fonts/Lato-Regular.ttf) format("truetype");
-}
-
-html{
+html {
     box-sizing: inherit;
 
-    font-size: .625rem;
+    font-size: 0.625rem;
 }
 
-body{
+body {
     box-sizing: border-box;
     margin: 0;
     background-color: #222;
@@ -29,7 +24,7 @@ body{
  *************/
 
 /* interface */
-.o-interface{
+.o-interface {
     position: absolute;
     left: 50vw;
     top: 50vh;
@@ -38,101 +33,100 @@ body{
     text-align: center;
 }
 
-.o-interface__buttons button{
+.o-interface__buttons button {
     margin: 2em;
 }
-
 
 /*************
  * components 
  *************/
 
 /* button */
-.c-button{
+.c-button {
     padding: 1rem 2rem;
-    border-radius: .6rem;
-    border: .2rem solid #36bbf5;
+    border-radius: 0.6rem;
+    border: 0.2rem solid #36bbf5;
     background-color: transparent;
     font-size: 2rem;
     color: #36bbf5;
-    transition: all .5s ease;
+    transition: all 0.5s ease;
 }
 
 .c-button:hover,
-.c-button:focus{
-    border: .2rem solid #25aae4;
+.c-button:focus {
+    border: 0.2rem solid #25aae4;
     background-color: #36bbf5;
     outline: none;
     color: #333;
 }
 
-.c-button--danger{
-    border: .2rem solid #ac3939;
+.c-button--danger {
+    border: 0.2rem solid #ac3939;
     color: #ac3939;
 }
 
 .c-button--danger:hover,
-.c-button--danger:focus{
-    border: .2rem solid #bd4a4a;
+.c-button--danger:focus {
+    border: 0.2rem solid #bd4a4a;
     background-color: #ac3939;
 }
 
-.c-button--primary{
-    border: .2rem solid #ffcc00;
+.c-button--primary {
+    border: 0.2rem solid #ffcc00;
     color: #ffcc00;
 }
 
 .c-button--primary:hover,
-.c-button--primary:focus{
-    border: .2rem solid #eebb00;
+.c-button--primary:focus {
+    border: 0.2rem solid #eebb00;
     background-color: #ffcc00;
 }
 
 /* heading */
-.c-heading{
+.c-heading {
     font-size: 5.12rem;
-    letter-spacing: .1em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #36bbf5;
 }
 
 /* bar */
-.c-bar{
+.c-bar {
     position: absolute;
     top: 2vmin;
     left: 2vmin;
     height: 4rem;
     width: 20rem;
-    border: .4rem solid #36bbf5;
-    border-radius: .6rem;
-    transition: all .5s ease;
+    border: 0.4rem solid #36bbf5;
+    border-radius: 0.6rem;
+    transition: all 0.5s ease;
 }
 
-.c-bar > span{
+.c-bar > span {
     display: block;
     height: 4rem;
     background-color: #25aae4;
-    border-radius: .1rem;
-    transition: all .5s ease;
+    border-radius: 0.1rem;
+    transition: all 0.5s ease;
 }
 
-.c-bar--warning{
-    border: .4rem solid #eebb00;
+.c-bar--warning {
+    border: 0.4rem solid #eebb00;
 }
 
-.c-bar--warning > span{
+.c-bar--warning > span {
     background-color: #ffcc00;
 }
 
-.c-bar--danger{
-    border: .4rem solid #ac3939;
+.c-bar--danger {
+    border: 0.4rem solid #ac3939;
 }
 
-.c-bar--danger > span{
+.c-bar--danger > span {
     background-color: #bd4a4a;
 }
 
-.c-score{
+.c-score {
     position: absolute;
     top: 2vmin;
     right: 2vmin;
@@ -141,53 +135,53 @@ body{
     color: #36bbf5;
 }
 /* text input */
-:-ms-input-placeholder{
-    color: rgba(54,188,245,.5);
+:-ms-input-placeholder {
+    color: rgba(54, 188, 245, 0.5);
 }
-::-ms-input-placeholde{
-    color: rgba(54,188,245,.5);
+::-ms-input-placeholde {
+    color: rgba(54, 188, 245, 0.5);
 }
 
-::placeholder { 
-    color: rgba(54,188,245,.5);
+::placeholder {
+    color: rgba(54, 188, 245, 0.5);
     opacity: 1;
 }
 
-.c-text-input{
+.c-text-input {
     padding: 1rem 2rem;
-    border-radius: .6rem;
-    border: .2rem solid #36bbf5;
+    border-radius: 0.6rem;
+    border: 0.2rem solid #36bbf5;
     background-color: transparent;
     font-size: 2rem;
     color: #36bbf5;
-    transition: all .5s ease;
+    transition: all 0.5s ease;
 }
 
-.c-text-input:focus{
-    border: .2rem solid #25aae4;
+.c-text-input:focus {
+    border: 0.2rem solid #25aae4;
     outline: none;
 }
 
-.c-text-input:focus{
-    border: .2rem solid #25aae4;
+.c-text-input:focus {
+    border: 0.2rem solid #25aae4;
     background-color: #36bbf5;
     outline: none;
     color: #333;
 }
 /* */
-.c-result{
+.c-result {
     margin: 0;
     margin-bottom: 3rem;
     font-size: 3rem;
     color: #36bbf5;
 }
 
-.c-result-list{
+.c-result-list {
     text-align: left;
     margin: 0;
 }
 
-.c-result-list > li{
+.c-result-list > li {
     font-size: 2rem;
     color: #36bbf5;
 }
@@ -195,6 +189,6 @@ body{
  * util class
  ************/
 
-.hide{
+.hide {
     display: none;
 }
