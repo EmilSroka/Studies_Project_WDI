@@ -11,6 +11,9 @@ module.exports = ({ mode = 'prod' } = {}) => {
                 filename: 'game.js',
                 path: `${__dirname}/dist`,
             },
+            resolve: {
+                extensions: ['.ts', '.js'],
+            },
             module: {
                 rules: [
                     {

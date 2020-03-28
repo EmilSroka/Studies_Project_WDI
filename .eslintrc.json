@@ -19,6 +19,7 @@
     },
     "plugins": ["@typescript-eslint", "eslint-plugin-jest"],
     "rules": {
+        "no-unused-vars": "off", // let typescript to do this :P
         "node/no-unpublished-require": "off",
         "node/no-unsupported-features/es-syntax": "off",
         "node/no-missing-import": [
