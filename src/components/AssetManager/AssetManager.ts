@@ -3,7 +3,7 @@ export const AudioRegex: RegExp = /\.mp3$/;
 type AssetFileTypes = HTMLImageElement | HTMLAudioElement;
 
 export class AssetManager {
-    private ready: Array<string>;
+    private ready: Array<string> = [];
 
     constructor(private unready: Array<string>) {}
 
